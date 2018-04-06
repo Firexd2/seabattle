@@ -11,12 +11,12 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("home.html")
 
 
-class WebSocket(tornado.websocket.WebSocketHandler):
+class WSHandler(tornado.websocket.WebSocketHandler):
 
     def check_origin(self, origin):
         return True
 
-    def open(self):
+    def open(self, game_id):
         print("WebSocket opened")
 
     def on_message(self, message):
@@ -30,7 +30,7 @@ def main():
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
-            (r'/ws', WebSocket)
+            (r'/scripts/(?P<game_id>\d+)/', WSHandler)
         ],
         cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         template_path=os.path.join(os.path.dirname(__file__), "templates"),

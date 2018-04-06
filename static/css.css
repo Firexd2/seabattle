@@ -1,0 +1,40 @@
+td
+{
+    border: 1px solid #8573ff;
+}
+
+td {
+    height: 40px;
+    width: 40px;
+}
+
+tr th {
+    text-align: center;
+}
+
+.ship, .count-ship, .block-ship {
+    display: inline-block;
+}
+
+.row-n {
+    text-align: center;
+    border: none;
+    padding-left: 15px;
+    font-weight: bold;
+}
+
+.block-ship {
+    height: 40px;
+    width: 40px;
+    background: black;
+    border-left: 1px solid #8573ff;
+    border-right: 1px solid #8573ff;
+}
+
+.block-ship-table {
+    background: black;
+}
+
+.count-ship {
+    font-size: 30px;
+}
