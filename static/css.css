@@ -38,3 +38,15 @@ tr th {
 .count-ship {
     font-size: 30px;
 }
+
+.hide-field {
+    opacity: 0.5;
+}
+
+.info {
+    position: absolute;
+}
+
+h3, p {
+    padding-left: 40px
+}
