@@ -11,8 +11,9 @@
 <div style="text-align: center" class="container">
     <div class="col-lg-6">
         <h3>Ваше поле</h3>
-        <p>Расположите ваши корабли на поле и нажмите на кнопку "Начать игру"</p>
+        <p>Введите ник, расположите корабли и нажмите на кнопку "Начать игру"</p>
         <div>
+            <input id="nickname" placeholder="Ник" type="text">
         <table style="display: inline-block" id="my-table-ship">
             <tr>
                 <th></th>
@@ -159,9 +160,18 @@
             </tr>
         </table>
             </div>
-        <button>Проверить и сохранить</button></div>
+        <button>Начать игру</button>
+    </div>
+    <div id="two-field" class="col-lg-6">
+        <h3>Список игроков онлайн</h3>
+        <p>Выберите игрока нужного вам соперника двойным кликом</p>
+        <div class="list-online">
+
+        </div>
+    </div>
 </div>
 </body>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="{{ static_url('ws.js') }}"></script>
 <script src="{{ static_url('scripts.js') }}"></script>
 </html>

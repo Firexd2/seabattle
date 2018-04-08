@@ -1,13 +1,3 @@
-// var scripts = new WebSocket('scripts://127.0.0.1:8888/scripts/13/');
-//
-// scripts.onopen;
-//
-// $('#btn').on('click', function () {
-//     scripts.send($('input').val())
-// });
-//
-// scripts.onmessage = function (ev) { $('span').text(ev.data) };
-
 $(function () {
 
     var letters = 'ABCDEFGHKL';
@@ -145,9 +135,52 @@ $(function () {
     }
 
     $('button').on('click', function () {
-        alert(check_count_ship())
+        if (check_count_ship().toString() === '4,3,2,1') {
+
+
+
+
+        } else {
+
+            var item_field = $('#my-table-ship').find('td');
+            var coordinate_ships = '';
+            var current_item_field;
+            var nick = $('#nickname').val();
+
+            for (var i=0;i<item_field.length;i++) {
+
+                current_item_field = item_field.eq(i);
+
+                if (!(current_item_field.attr('class') === 'row-n')) {
+                    if (!(check_class(item_field.eq(i)))) {
+                        coordinate_ships += current_item_field.attr('id') + '-'
+                    }
+                }
+            }
+
+            var online_socket = new WebSocket('ws://127.0.0.1:8888/ws/online/' + nick + '/' + coordinate_ships + '/');
+
+            online_socket.onopen;
+
+            online_socket.onmessage = function (ev) {
+                var user_online = JSON.parse(ev.data).user_online;
+                var html = '';
+                for (var i=0;i<user_online.length;i++) {
+                    html += '<p>' + user_online[i] + '</p>'
+                }
+
+                if (!(html)) {
+                    html = 'Список онлайна пуст'
+                }
+
+                $('.list-online').html(html);
+                $('#two-field').show()
+            }
+
+
+            // alert('Корабли расположены не по правилам')
+        }
     })
 
 });
-
 

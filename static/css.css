@@ -50,3 +50,7 @@ tr th {
 h3, p {
     padding-left: 40px
 }
+
+#two-field {
+    display: none;
+}
