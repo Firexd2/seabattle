@@ -11,9 +11,8 @@
 <div style="text-align: center" class="container">
     <div class="col-lg-6">
         <h3>Ваше поле</h3>
-        <p>Введите ник, расположите корабли и нажмите на кнопку "Начать игру"</p>
+        <p>Расположите ваши корабли, введите ник и нажмите на кнопку "Готов"!</p>
         <div>
-            <input id="nickname" placeholder="Ник" type="text">
         <table style="display: inline-block" id="my-table-ship">
             <tr>
                 <th></th>
@@ -159,15 +158,168 @@
                 <td id="9L"></td>
             </tr>
         </table>
-            </div>
-        <button>Начать игру</button>
+        </div>
+        <div id="my-control">
+            <input id="nickname" placeholder="Ник" type="text">
+            <button>Начать игру</button>
+        </div>
     </div>
-    <div id="two-field" class="col-lg-6">
+    <div hidden id="online" class="col-lg-6">
         <h3>Список игроков онлайн</h3>
         <p>Выберите игрока нужного вам соперника двойным кликом</p>
         <div class="list-online">
 
         </div>
+    </div>
+    <div hidden id="two-field" class="col-lg-6">
+        <h3>Поле соперника</h3>
+        <p>Стреляйте по кораблям противника!</p>
+        <div>
+                <table style="display: inline-block" id="opponent-table-ship">
+            <tr>
+                <th></th>
+                <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th>
+                <th>E</th>
+                <th>F</th>
+                <th>G</th>
+                <th>H</th>
+                <th>K</th>
+                <th>L</th>
+            </tr>
+            <tr>
+                <td class="row-n">1</td>
+                <td id="0A"></td>
+                <td id="0B"></td>
+                <td id="0C"></td>
+                <td id="0D"></td>
+                <td id="0E"></td>
+                <td id="0F"></td>
+                <td id="0G"></td>
+                <td id="0H"></td>
+                <td id="0K"></td>
+                <td id="0L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">2</td>
+                <td id="1A"></td>
+                <td id="1B"></td>
+                <td id="1C"></td>
+                <td id="1D"></td>
+                <td id="1E"></td>
+                <td id="1F"></td>
+                <td id="1G"></td>
+                <td id="1H"></td>
+                <td id="1K"></td>
+                <td id="1L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">3</td>
+                <td id="2A"></td>
+                <td id="2B"></td>
+                <td id="2C"></td>
+                <td id="2D"></td>
+                <td id="2E"></td>
+                <td id="2F"></td>
+                <td id="2G"></td>
+                <td id="2H"></td>
+                <td id="2K"></td>
+                <td id="2L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">4</td>
+                <td id="3A"></td>
+                <td id="3B"></td>
+                <td id="3C"></td>
+                <td id="3D"></td>
+                <td id="3E"></td>
+                <td id="3F"></td>
+                <td id="3G"></td>
+                <td id="3H"></td>
+                <td id="3K"></td>
+                <td id="3L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">5</td>
+                <td id="4A"></td>
+                <td id="4B"></td>
+                <td id="4C"></td>
+                <td id="4D"></td>
+                <td id="4E"></td>
+                <td id="4F"></td>
+                <td id="4G"></td>
+                <td id="4H"></td>
+                <td id="4K"></td>
+                <td id="4L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">6</td>
+                <td id="5A"></td>
+                <td id="5B"></td>
+                <td id="5C"></td>
+                <td id="5D"></td>
+                <td id="5E"></td>
+                <td id="5F"></td>
+                <td id="5G"></td>
+                <td id="5H"></td>
+                <td id="5K"></td>
+                <td id="5L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">7</td>
+                <td id="6A"></td>
+                <td id="6B"></td>
+                <td id="6C"></td>
+                <td id="6D"></td>
+                <td id="6E"></td>
+                <td id="6F"></td>
+                <td id="6G"></td>
+                <td id="6H"></td>
+                <td id="6K"></td>
+                <td id="6L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">8</td>
+                <td id="7A"></td>
+                <td id="7B"></td>
+                <td id="7C"></td>
+                <td id="7D"></td>
+                <td id="7E"></td>
+                <td id="7F"></td>
+                <td id="7G"></td>
+                <td id="7H"></td>
+                <td id="7K"></td>
+                <td id="7L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">9</td>
+                <td id="8A"></td>
+                <td id="8B"></td>
+                <td id="8C"></td>
+                <td id="8D"></td>
+                <td id="8E"></td>
+                <td id="8F"></td>
+                <td id="8G"></td>
+                <td id="8H"></td>
+                <td id="8K"></td>
+                <td id="8L"></td>
+            </tr>
+            <tr>
+                <td class="row-n">10</td>
+                <td id="9A"></td>
+                <td id="9B"></td>
+                <td id="9C"></td>
+                <td id="9D"></td>
+                <td id="9E"></td>
+                <td id="9F"></td>
+                <td id="9G"></td>
+                <td id="9H"></td>
+                <td id="9K"></td>
+                <td id="9L"></td>
+            </tr>
+        </table>
     </div>
 </div>
 </body>

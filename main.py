@@ -6,6 +6,8 @@ import tornado.ioloop
 import tornado.web
 from collections import defaultdict
 
+from tornado.escape import json_decode
+
 
 class WaiterSet(defaultdict):
     def __init__(self, **kwargs):
@@ -26,45 +28,69 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("home.html")
 
 
-class WSHandler(tornado.websocket.WebSocketHandler):
+class WSGameHandler(tornado.websocket.WebSocketHandler):
+
+    games = dict()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # состояние поля
+        # 0 - пусто, 1 - есть блок корабля, 2 - мимо, 3 - подбит
+        self.field = {x: 0 for x in [str(n) + letter for letter in 'ABCDEFGHKL' for n in list(range(10))]}
+        self.opponent = ''
+
 
     def check_origin(self, origin):
         return True
 
-    def open(self):
+    def open(self, id, coordinates):
+        for coordinate in coordinates[:-1].split('-'):
+            self.field[coordinate] = 1
 
-        print("WebSocket opened")
+        if not self.games.get(id):
+            self.games[id] = {'one': self}
+            self.opponent = 'two'
+        else:
+            _dict = self.games[id]
+            _dict.update({'two': self})
+            print('test')
+            self.opponent = 'one'
+
+        print(self.games)
 
     def on_message(self, message):
-        self.write_message(str(int(message)*2))
+        pass
 
     def on_close(self):
-        print("WebSocket closed")
+        print("Game closed")
 
 
 class WSOnlineHandler(tornado.websocket.WebSocketHandler):
 
     online = dict()
 
-    def __init__(self, application, request, **kwargs):
-        super().__init__(application, request, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.nickname = ''
 
     def check_origin(self, origin):
         return True
 
-    def open(self, nick, coordinates):
-        self.online[nick] = {'self': self, 'coordinates': coordinates[:-1]}
+    def open(self, nick):
+        self.online[nick] = {'self': self}
         self.nickname = nick
-        self.notification_new_user()
+        self.notification_online_user()
         print("NewUser")
 
     def on_message(self, message):
-        pass
+        # Создание игры
+        _object = self.online[message]['self']
+        _object.write_message({'game': self.nickname, 'trigger': 'game'})
 
     def on_close(self):
         self.online.pop(self.nickname)
-        self.notification_new_user()
+        self.notification_online_user()
         print("UserLogOut")
 
     @property
@@ -72,20 +98,21 @@ class WSOnlineHandler(tornado.websocket.WebSocketHandler):
         # Формируем список текущего онлайна
         return {'user_online': [nickname for nickname in self.online.keys() if nickname != self.nickname]}
 
-    def notification_new_user(self):
+    def notification_online_user(self):
         # Обновляем у всех подключенных пользователей список онлайна
         for user in self.online:
             _object = self.online[user]['self']
             list_user = _object.list_user
+            list_user.update({'trigger': 'list_user'})
             _object.write_message(list_user)
 
 
 def main():
     app = tornado.web.Application(
         [
-            (r"/", MainHandler),
-            (r'/ws/', WSHandler),
-            (r'/ws/online/(?P<nick>\w+)/(?P<coordinates>\S+)/', WSOnlineHandler)
+            (r'/', MainHandler),
+            (r'/ws/game/(?P<id>\w+)/(?P<coordinates>\S+)/', WSGameHandler),
+            (r'/ws/online/(?P<nick>\w+)/', WSOnlineHandler)
         ],
         cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         template_path=os.path.join(os.path.dirname(__file__), "templates"),

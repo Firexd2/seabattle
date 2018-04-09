@@ -3,16 +3,18 @@ $(function () {
     var letters = 'ABCDEFGHKL';
 
     $('td').on('click', function () {
-        var classBlock = 'block-ship-table';
-        if ($(this).attr('class') !== 'row-n') {
-            if (check_class($(this))) {
-                if (check_diagonale($(this))) {
-                    if (check_length_ship($(this)) < 5) {
-                        $(this).addClass(classBlock)
+        if ($('#my-table-ship').attr('class') !== 'block') {
+            var classBlock = 'block-ship-table';
+            if ($(this).attr('class') !== 'row-n') {
+                if (check_class($(this))) {
+                    if (check_diagonale($(this))) {
+                        if (check_length_ship($(this)) < 5) {
+                            $(this).addClass(classBlock)
+                        }
                     }
+                } else {
+                    $(this).removeClass(classBlock)
                 }
-            } else {
-                $(this).removeClass(classBlock)
             }
         }
     });
@@ -158,29 +160,63 @@ $(function () {
                 }
             }
 
-            var online_socket = new WebSocket('ws://127.0.0.1:8888/ws/online/' + nick + '/' + coordinate_ships + '/');
+            var online_socket = new WebSocket('ws://127.0.0.1:8888/ws/online/' + nick + '/');
 
-            online_socket.onopen;
+            online_socket.onopen = function () {
+                $('#my-table-ship').addClass('block');
+                $('#my-control').hide();
 
-            online_socket.onmessage = function (ev) {
-                var user_online = JSON.parse(ev.data).user_online;
-                var html = '';
-                for (var i=0;i<user_online.length;i++) {
-                    html += '<p>' + user_online[i] + '</p>'
+                online_socket.onmessage = function (ev) {
+                    ev = JSON.parse(ev.data);
+                    if (ev.trigger === 'list_user') {
+                        var user_online = ev.user_online;
+                        var html = '';
+                        for (var i = 0; i < user_online.length; i++) {
+                            html += '<p class="user">' + user_online[i] + '</p>'
+                        }
+
+                        if (!(html)) {
+                            html = 'Список онлайна пуст'
+                        }
+
+                        $('.list-online').html(html);
+                        $('#online').show()
+                    } else if (ev.trigger === 'game') {
+                        var user = ev.game;
+                        var id = $('input').val() + user;
+                        var game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
+                        game_socket.onopen = function () {
+                            online_socket.close();
+                            gaming(game_socket)
+                        }
+                    }
+                };
+
+                $('body').on('click', '.user', function () {
+
+                    var user = $(this).text();
+                    var id = user + $('input').val();
+                    var game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
+                    game_socket.onopen = function () {
+                        online_socket.send(user);
+                        online_socket.close();
+                        gaming(game_socket)
+                    }
+                });
+
+                function gaming(game_socket) {
+
+                    $('#online').hide();
+                    $('#two-field').show();
+                    alert('ИГРА НАЧАЛАСЬ')
                 }
-
-                if (!(html)) {
-                    html = 'Список онлайна пуст'
-                }
-
-                $('.list-online').html(html);
-                $('#two-field').show()
             }
 
 
             // alert('Корабли расположены не по правилам')
         }
+
+
+
     })
-
 });
-
