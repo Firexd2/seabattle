@@ -35,6 +35,14 @@ tr th {
     background: black;
 }
 
+.corrupted {
+    background: red;
+}
+
+.past {
+    background: #d2d2d2;
+}
+
 .count-ship {
     font-size: 30px;
 }

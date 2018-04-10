@@ -1,10 +1,10 @@
 $(function () {
 
-    var letters = 'ABCDEFGHKL';
+    const letters = 'ABCDEFGHKL';
 
     $('td').on('click', function () {
         if ($('#my-table-ship').attr('class') !== 'block') {
-            var classBlock = 'block-ship-table';
+            const classBlock = 'block-ship-table';
             if ($(this).attr('class') !== 'row-n') {
                 if (check_class($(this))) {
                     if (check_diagonale($(this))) {
@@ -28,11 +28,11 @@ $(function () {
 
     // проверка на возможность расположения блоков кораблей
     function check_diagonale(element) {
-        var coorditate_digit = parseInt(element.attr('id')[0]);
-        var coordinate_letter = element.attr('id')[1];
-        var movement = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
-        var current_index_off;
-        for (var i=0;i<movement.length;i++) {
+        const coorditate_digit = parseInt(element.attr('id')[0]);
+        const coordinate_letter = element.attr('id')[1];
+        const movement = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+        let current_index_off;
+        for (let i=0;i<movement.length;i++) {
             current_index_off = letters.indexOf(coordinate_letter);
             if (!(check_class($('#' + (coorditate_digit + movement[i][0]) + (letters[current_index_off + movement[i][1]]))))) {
                 return false
@@ -43,19 +43,20 @@ $(function () {
 
     // подсчет длинны корабля
     function check_length_ship(element) {
-        var length = 1;
+        let length = 1;
+        const movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
+
 
         circumvention({element: element, last:'start'});
 
         function circumvention(parameters) {
-            var element = parameters.element;
-            var last = parameters.last;
-            var coorditate_digit = parseInt(element.attr('id')[0]);
-            var coordinate_letter = element.attr('id')[1];
-            var movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
-            var current_index_off;
-            var future_element;
-            for (var i=0;i<movement.length;i++) {
+            const element = parameters.element;
+            const last = parameters.last;
+            const coorditate_digit = parseInt(element.attr('id')[0]);
+            const coordinate_letter = element.attr('id')[1];
+            let current_index_off;
+            let future_element;
+            for (let i=0;i<movement.length;i++) {
                 current_index_off = letters.indexOf(coordinate_letter);
                 future_element = $('#' + (coorditate_digit + movement[i][0]) + (letters[current_index_off + movement[i][1]]));
                 if (!(check_class(future_element))) {
@@ -76,20 +77,21 @@ $(function () {
 
     function check_count_ship() {
 
-        var ships = [0, 0, 0, 0];
-        var length;
+        const movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
+        let ships = [0, 0, 0, 0];
+        let length;
 
         // Делаем массив для отметок о проверенных кораблях
-        var n = 11, m = 11;
-        var array_ships = [];
-        for (var i = 0; i < m; i++){
+        const n = 11, m = 11;
+        let array_ships = [];
+        for (let i=0; i<m; i++) {
             array_ships[i] = [];
-            for (var j = 0; j < n; j++){
+            for (let j=0; j<n; j++) {
                 array_ships[i][j] = 0;
             }}
 
-        for (var i=0;i<10;i++) {
-            for (var j=0;j<10;j++) {
+        for (let i=0;i<10;i++) {
+            for (let j=0;j<10;j++) {
                 if (!(array_ships[i][j])) {
 
                     if (!(check_class($('#' + i + letters[j])))) {
@@ -99,14 +101,13 @@ $(function () {
                         search_ship({element: $('#' + i + letters[j]), last: 'start'});
 
                         function search_ship(parameters) {
-                            var element = parameters.element;
-                            var last = parameters.last;
-                            var coorditate_digit = parseInt(element.attr('id')[0]);
-                            var coordinate_letter = element.attr('id')[1];
-                            var movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
-                            var current_index_off;
-                            var future_element;
-                            for (var q = 0; q < movement.length; q++) {
+                            const element = parameters.element;
+                            const last = parameters.last;
+                            const coorditate_digit = parseInt(element.attr('id')[0]);
+                            const coordinate_letter = element.attr('id')[1];
+                            let current_index_off;
+                            let future_element;
+                            for (let q = 0; q < movement.length; q++) {
                                 current_index_off = letters.indexOf(coordinate_letter);
                                 future_element = $('#' + (coorditate_digit + movement[q][0]) + (letters[current_index_off + movement[q][1]]));
                                 if (!(check_class(future_element))) {
@@ -144,12 +145,12 @@ $(function () {
 
         } else {
 
-            var item_field = $('#my-table-ship').find('td');
-            var coordinate_ships = '';
-            var current_item_field;
-            var nick = $('#nickname').val();
+            const item_field = $('#my-table-ship').find('td');
+            let coordinate_ships = '';
+            let current_item_field;
+            const nick = $('#nickname').val();
 
-            for (var i=0;i<item_field.length;i++) {
+            for (let i=0;i<item_field.length;i++) {
 
                 current_item_field = item_field.eq(i);
 
@@ -160,7 +161,7 @@ $(function () {
                 }
             }
 
-            var online_socket = new WebSocket('ws://127.0.0.1:8888/ws/online/' + nick + '/');
+            const online_socket = new WebSocket('ws://127.0.0.1:8888/ws/online/' + nick + '/');
 
             online_socket.onopen = function () {
                 $('#my-table-ship').addClass('block');
@@ -169,9 +170,9 @@ $(function () {
                 online_socket.onmessage = function (ev) {
                     ev = JSON.parse(ev.data);
                     if (ev.trigger === 'list_user') {
-                        var user_online = ev.user_online;
-                        var html = '';
-                        for (var i = 0; i < user_online.length; i++) {
+                        const user_online = ev.user_online;
+                        let html = '';
+                        for (let i = 0; i < user_online.length; i++) {
                             html += '<p class="user">' + user_online[i] + '</p>'
                         }
 
@@ -182,9 +183,9 @@ $(function () {
                         $('.list-online').html(html);
                         $('#online').show()
                     } else if (ev.trigger === 'game') {
-                        var user = ev.game;
-                        var id = $('input').val() + user;
-                        var game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
+                        const user = ev.game;
+                        const id = $('input').val() + user;
+                        const game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
                         game_socket.onopen = function () {
                             online_socket.close();
                             gaming(game_socket)
@@ -194,9 +195,9 @@ $(function () {
 
                 $('body').on('click', '.user', function () {
 
-                    var user = $(this).text();
-                    var id = user + $('input').val();
-                    var game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
+                    const user = $(this).text();
+                    const id = user + $('input').val();
+                    const game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
                     game_socket.onopen = function () {
                         online_socket.send(user);
                         online_socket.close();
@@ -208,15 +209,36 @@ $(function () {
 
                     $('#online').hide();
                     $('#two-field').show();
-                    alert('ИГРА НАЧАЛАСЬ')
+
+                    const opponent_field = $('#opponent-table-ship');
+                    const my_field = $('#my-table-ship');
+
+                    $(opponent_field.find('td')).on('click', function () {
+                        if (!($(this).attr('class'))) {
+                            game_socket.send($(this).attr('id2'));
+                        } else {
+                            alert('Эта клетка уже помечена')
+                        }
+
+                    });
+                    game_socket.onmessage = function (ev) {
+
+                        ev = JSON.parse(ev.data);
+
+                        if (ev.trigger === 'def') {
+                            const def = ev.def;
+                            opponent_field.find($('td[id2="' + def.coordinate + '"]')).removeClass().addClass(def.status)
+                        } else if (ev.trigger === 'attack') {
+                            const attack = ev.attack;
+                            my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status)
+                        }
+                    }
+
                 }
             }
 
 
             // alert('Корабли расположены не по правилам')
         }
-
-
-
     })
 });

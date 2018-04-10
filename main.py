@@ -6,9 +6,6 @@ import tornado.ioloop
 import tornado.web
 from collections import defaultdict
 
-from tornado.escape import json_decode
-
-
 class WaiterSet(defaultdict):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -38,6 +35,7 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         # состояние поля
         # 0 - пусто, 1 - есть блок корабля, 2 - мимо, 3 - подбит
         self.field = {x: 0 for x in [str(n) + letter for letter in 'ABCDEFGHKL' for n in list(range(10))]}
+        self.id = ''
         self.opponent = ''
 
 
@@ -45,6 +43,7 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         return True
 
     def open(self, id, coordinates):
+        self.id = id
         for coordinate in coordinates[:-1].split('-'):
             self.field[coordinate] = 1
 
@@ -54,13 +53,25 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         else:
             _dict = self.games[id]
             _dict.update({'two': self})
-            print('test')
             self.opponent = 'one'
 
         print(self.games)
 
-    def on_message(self, message):
-        pass
+    def on_message(self, coordinate):
+        opponent = self.games[self.id][self.opponent]
+        opponent_field = opponent.field
+
+        if opponent_field[coordinate]:
+            opponent_field[coordinate] = 3
+            status = 'corrupted'
+        else:
+            opponent_field[coordinate] = 2
+            status = 'past'
+
+        response = {'coordinate': coordinate, 'status': status}
+
+        self.write_message({'trigger': 'def', 'def': response})
+        opponent.write_message({'trigger': 'attack', 'attack': response})
 
     def on_close(self):
         print("Game closed")
