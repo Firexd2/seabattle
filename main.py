@@ -1,4 +1,5 @@
 import os
+import time
 
 import tornado.web
 import tornado.websocket
@@ -6,18 +7,7 @@ import tornado.ioloop
 import tornado.web
 from collections import defaultdict
 
-class WaiterSet(defaultdict):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.default_factory = set
-
-    def broadcast(self, key, message):
-        for waiter in self[key]:
-            try:
-                waiter.write_message(message)
-            except Exception:
-                print('Error in WaiterSet')
-
+from tornado import gen
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -60,13 +50,15 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, coordinate):
         opponent = self.games[self.id][self.opponent]
         opponent_field = opponent.field
-
-        if opponent_field[coordinate]:
-            opponent_field[coordinate] = 3
-            status = 'corrupted'
+        if coordinate:
+            if opponent_field[coordinate]:
+                opponent_field[coordinate] = 3
+                status = 'corrupted'
+            else:
+                opponent_field[coordinate] = 2
+                status = 'past'
         else:
-            opponent_field[coordinate] = 2
-            status = 'past'
+            status = 'pass'
 
         response = {'coordinate': coordinate, 'status': status}
 
@@ -118,12 +110,21 @@ class WSOnlineHandler(tornado.websocket.WebSocketHandler):
             _object.write_message(list_user)
 
 
+class TestHandler(tornado.web.RequestHandler):
+    @gen.coroutine
+    def get(self):
+        for x in list(range(3)):
+            yield gen.sleep(2)
+            self.write(str(x))
+
+
 def main():
     app = tornado.web.Application(
         [
             (r'/', MainHandler),
             (r'/ws/game/(?P<id>\w+)/(?P<coordinates>\S+)/', WSGameHandler),
-            (r'/ws/online/(?P<nick>\w+)/', WSOnlineHandler)
+            (r'/ws/online/(?P<nick>\w+)/', WSOnlineHandler),
+            (r'/test/', TestHandler),
         ],
         cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         template_path=os.path.join(os.path.dirname(__file__), "templates"),

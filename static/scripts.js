@@ -1,9 +1,13 @@
 $(function () {
 
     const letters = 'ABCDEFGHKL';
+    const opponent_field = $('#opponent-table-ship');
+    const my_field = $('#my-table-ship');
+    const second_march = 60;
 
-    $('td').on('click', function () {
-        if ($('#my-table-ship').attr('class') !== 'block') {
+
+    $(my_field.find('td')).on('click', function () {
+        if (my_field.attr('class').split(' ').indexOf('block') === -1) {
             const classBlock = 'block-ship-table';
             if ($(this).attr('class') !== 'row-n') {
                 if (check_class($(this))) {
@@ -145,7 +149,7 @@ $(function () {
 
         } else {
 
-            const item_field = $('#my-table-ship').find('td');
+            const item_field = my_field.find('td');
             let coordinate_ships = '';
             let current_item_field;
             const nick = $('#nickname').val();
@@ -164,7 +168,7 @@ $(function () {
             const online_socket = new WebSocket('ws://127.0.0.1:8888/ws/online/' + nick + '/');
 
             online_socket.onopen = function () {
-                $('#my-table-ship').addClass('block');
+                my_field.addClass('block');
                 $('#my-control').hide();
 
                 online_socket.onmessage = function (ev) {
@@ -188,7 +192,7 @@ $(function () {
                         const game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
                         game_socket.onopen = function () {
                             online_socket.close();
-                            gaming(game_socket)
+                            gaming(game_socket, false)
                         }
                     }
                 };
@@ -201,36 +205,87 @@ $(function () {
                     game_socket.onopen = function () {
                         online_socket.send(user);
                         online_socket.close();
-                        gaming(game_socket)
+                        gaming(game_socket, true)
                     }
                 });
 
-                function gaming(game_socket) {
+                function gaming(game_socket, march) {
+
+                    $('.start-info').hide();
+                    $('.middle-info').hide();
+                    $('.game-info').show();
+
+                    const my_time_element = $('#my-time');
+                    const opponent_time_element = $('#opponent-time');
+
+                    my_time_element.text(second_march);opponent_time_element.text(second_march);
+
+                    let timer_march;
+
+                    function timer(element) {
+                        let value = element.text() - 1;
+                        element.text(value);
+                        if (value < 1) {
+                            clearInterval(timer_march);
+                            if (element.attr('id') === 'my-time') {
+                                game_socket.send('')
+                            }
+                        }
+                    }
+
+                    function _march(march) {
+                        let timer_element;
+                        clearInterval(timer_march);
+                        if (march) {
+                            opponent_field.removeClass('hide-field'); my_field.addClass('hide-field');
+                            timer_element = my_time_element;
+                        } else {
+                            my_field.removeClass('hide-field'); opponent_field.addClass('hide-field');
+                            timer_element = opponent_time_element
+                        }
+                        timer_element.text(second_march);
+                        timer_march = setInterval(timer, 1000, timer_element)
+                    }
+
+                    _march(march);
 
                     $('#online').hide();
                     $('#two-field').show();
 
-                    const opponent_field = $('#opponent-table-ship');
-                    const my_field = $('#my-table-ship');
-
                     $(opponent_field.find('td')).on('click', function () {
-                        if (!($(this).attr('class'))) {
-                            game_socket.send($(this).attr('id2'));
-                        } else {
-                            alert('Эта клетка уже помечена')
+                        if (opponent_field.attr('class') !== 'hide-field') {
+                            if (!($(this).attr('class'))) {
+                                game_socket.send($(this).attr('id2'));
+                            } else {
+                                alert('Эта клетка уже помечена')
+                            }
                         }
 
                     });
                     game_socket.onmessage = function (ev) {
-
                         ev = JSON.parse(ev.data);
 
                         if (ev.trigger === 'def') {
                             const def = ev.def;
-                            opponent_field.find($('td[id2="' + def.coordinate + '"]')).removeClass().addClass(def.status)
+                            if (def.coordinate) {
+                                opponent_field.find($('td[id2="' + def.coordinate + '"]')).removeClass().addClass(def.status);
+                            }
+                            if ('past pass'.indexOf(def.status) !== -1) {
+                                _march(false)
+                            } else {
+                                my_time_element.text(second_march);
+                            }
+
                         } else if (ev.trigger === 'attack') {
                             const attack = ev.attack;
-                            my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status)
+                            if (attack.coordinate) {
+                                my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status);
+                            }
+                            if ('past pass'.indexOf(attack.status) !== -1) {
+                                _march(true)
+                            } else {
+                                opponent_time_element.text(second_march)
+                            }
                         }
                     }
 
