@@ -141,7 +141,7 @@ $(function () {
         return ships
     }
 
-    $('button').on('click', function () {
+    $('#run-game').on('click', function () {
         if (check_count_ship().toString() === '4,3,2,1') {
 
 
@@ -152,7 +152,7 @@ $(function () {
             const item_field = my_field.find('td');
             let coordinate_ships = '';
             let current_item_field;
-            const nick = $('#nickname').val();
+            const nick = $('#nickname').text();
 
             for (let i=0;i<item_field.length;i++) {
 
@@ -188,7 +188,7 @@ $(function () {
                         $('#online').show()
                     } else if (ev.trigger === 'game') {
                         const user = ev.game;
-                        const id = $('input').val() + user;
+                        const id = $('#nickname').text() + user;
                         const game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
                         game_socket.onopen = function () {
                             online_socket.close();
@@ -200,7 +200,7 @@ $(function () {
                 $('body').on('click', '.user', function () {
 
                     const user = $(this).text();
-                    const id = user + $('input').val();
+                    const id = user + $('#nickname').text();
                     const game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
                     game_socket.onopen = function () {
                         online_socket.send(user);
@@ -272,8 +272,10 @@ $(function () {
                             }
                             if ('past pass'.indexOf(def.status) !== -1) {
                                 _march(false)
-                            } else {
+                            } else if (def.status === 'corrupted') {
                                 my_time_element.text(second_march);
+                            } else if (def.status === 'victory') {
+                                alert('Вы выиграли')
                             }
 
                         } else if (ev.trigger === 'attack') {
@@ -283,8 +285,10 @@ $(function () {
                             }
                             if ('past pass'.indexOf(attack.status) !== -1) {
                                 _march(true)
-                            } else {
+                            } else if (attack.status === 'corrupted') {
                                 opponent_time_element.text(second_march)
+                            } else if (attack.status === 'victory') {
+                                alert('Вы проиграли')
                             }
                         }
                     }

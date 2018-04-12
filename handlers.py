@@ -1,18 +1,43 @@
 import os
-import time
-
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
-from collections import defaultdict
 
 from tornado import gen
 
+from models import User, Score
+
 
 class MainHandler(tornado.web.RequestHandler):
+
     def get(self):
-        self.render("home.html")
+        if not self.get_argument('logout', default=None):
+            auth = self.get_cookie('auth', default=None)
+            if auth:
+                self.render("home.html", nickname=auth)
+            else:
+                self.render('login.html')
+        else:
+            self.clear_cookie('auth')
+            self.redirect('/')
+
+    def post(self):
+        username = self.get_argument('username')
+        password = self.get_argument('password')
+
+        user = User.get_or_none(username=username)
+        if not user:
+            score = Score.create()
+            User.create(username=username, password=password, score=score)
+            self.set_cookie('auth', username)
+            self.redirect('/')
+        else:
+            if user.password == password:
+                self.set_cookie('auth', username)
+                self.redirect('/')
+            else:
+                self.write('Не верный пароль')
 
 
 class WSGameHandler(tornado.websocket.WebSocketHandler):
@@ -59,6 +84,12 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
                 status = 'past'
         else:
             status = 'pass'
+
+        for field_item in opponent_field:
+            if opponent_field[field_item] == 1:
+                break
+        else:
+            status = 'victory'
 
         response = {'coordinate': coordinate, 'status': status}
 
@@ -126,12 +157,11 @@ def main():
             (r'/ws/online/(?P<nick>\w+)/', WSOnlineHandler),
             (r'/test/', TestHandler),
         ],
-        cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),
-        xsrf_cookies=True,
+        xsrf_cookies=False,
         debug=True,
-        autoreload=True
+        autoreload=True,
     )
     app.listen(8888)
     tornado.ioloop.IOLoop.current().start()

@@ -35,7 +35,7 @@ tr th {
     background: black;
 }
 
-.corrupted {
+.corrupted, .victory {
     background: red;
 }
 
@@ -61,4 +61,14 @@ h3, p {
 
 #two-field {
     display: none;
+}
+
+.panel-bar {
+    height: 20px;
+    text-align: left;
+    font-size: 16px;
+}
+
+.panel-bar span {
+    padding-left: 30px;
 }
