@@ -4,23 +4,30 @@ import tornado.websocket
 import tornado.ioloop
 import tornado.web
 
-from tornado import gen
-
 from models import User, Score
+
+
+class LogoutHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        self.clear_cookie('auth')
+        self.redirect('/')
+
+
+class ScoreHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        self.render('score.html', users=User.select().order_by(User.score))
 
 
 class MainHandler(tornado.web.RequestHandler):
 
     def get(self):
-        if not self.get_argument('logout', default=None):
-            auth = self.get_cookie('auth', default=None)
-            if auth:
-                self.render("home.html", nickname=auth)
-            else:
-                self.render('login.html')
+        auth = self.get_cookie('auth', default=None)
+        if auth:
+            self.render('home.html', nickname=auth)
         else:
-            self.clear_cookie('auth')
-            self.redirect('/')
+            self.render('login.html')
 
     def post(self):
         username = self.get_argument('username')
@@ -50,15 +57,14 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         # состояние поля
         # 0 - пусто, 1 - есть блок корабля, 2 - мимо, 3 - подбит
         self.field = {x: 0 for x in [str(n) + letter for letter in 'ABCDEFGHKL' for n in list(range(10))]}
-        self.id = ''
-        self.opponent = ''
-
+        self.id = self.opponent = self.nickname = ''
 
     def check_origin(self, origin):
         return True
 
-    def open(self, id, coordinates):
+    def open(self, id, coordinates, nick):
         self.id = id
+        self.nickname = nick
         for coordinate in coordinates[:-1].split('-'):
             self.field[coordinate] = 1
 
@@ -97,7 +103,24 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         opponent.write_message({'trigger': 'attack', 'attack': response})
 
     def on_close(self):
-        print("Game closed")
+        score = Score.select().join(User).where(User.username == self.nickname)[0]
+        if self.close_code == 1000:
+            reason = self.close_reason
+            if reason == 'victory':
+                score.win += 1
+                score.games += 1
+            elif reason == 'lose':
+                score.lose += 1
+                score.games += 1
+        else:
+            self.games[self.id][self.opponent].write_message('opponent_out')
+            score.out += 1
+            score.games += 1
+        score.save()
+
+        self.games.pop(self.id, None)
+        print('game over')
+        print(self.games)
 
 
 class WSOnlineHandler(tornado.websocket.WebSocketHandler):
@@ -141,21 +164,14 @@ class WSOnlineHandler(tornado.websocket.WebSocketHandler):
             _object.write_message(list_user)
 
 
-class TestHandler(tornado.web.RequestHandler):
-    @gen.coroutine
-    def get(self):
-        for x in list(range(3)):
-            yield gen.sleep(2)
-            self.write(str(x))
-
-
 def main():
     app = tornado.web.Application(
         [
             (r'/', MainHandler),
-            (r'/ws/game/(?P<id>\w+)/(?P<coordinates>\S+)/', WSGameHandler),
+            (r'/ws/game/(?P<id>\w+)/(?P<coordinates>\S+)/(?P<nick>\S+)/', WSGameHandler),
             (r'/ws/online/(?P<nick>\w+)/', WSOnlineHandler),
-            (r'/test/', TestHandler),
+            (r'/logout/', LogoutHandler),
+            (r'/score/', ScoreHandler),
         ],
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),

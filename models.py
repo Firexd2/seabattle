@@ -11,7 +11,11 @@ class BaseModel(Model):
 class Score(BaseModel):
     win = IntegerField(default=0)
     lose = IntegerField(default=0)
+    out = IntegerField(default=0)
     games = IntegerField(default=0)
+
+    class Meta:
+        order_by = ['win']
 
 
 class User(BaseModel):

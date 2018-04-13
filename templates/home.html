@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>WS</title>
+    <title>Морской бой</title>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ static_url('styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,15 +11,22 @@
 <div style="text-align: center" class="container">
     <div class="row">
         <div class="panel-bar">
-            <span>Вы зашли как, <a id="nickname">{{ nickname }}</a>. <a href="/?logout=1">Выйти</a></span>
+            <span>Вы зашли как <a id="nickname">{{ nickname }}</a>. <a href="/logout/">Выйти</a></span>
+            <span><a href="/score/">Статистика</a></span>
         </div>
     </div>
     <div class="row">
         <div class="col-lg-6">
             <h3 class="start-info">Ваше поле</h3>
             <h3 hidden class="game-info">Ход соперника</h3>
-            <p class="start-info">Расположите ваши корабли, введите ник и нажмите на кнопку "Готов"!</p>
-            <p hidden class="middle-info"></p>
+            <p class="start">Расположите ваши корабли по классическим правилам морского боя. <br>
+                <b>1 шт.</b> - 4х палубный, <b>2 шт</b>. - 3х палубные, <b>3 шт</b>. - 2х палубные, <b>4 шт</b>. - одно палубные.
+                <br>
+                Нажмите на кнопку <b>"Готов"</b>, чтобы выйти в онлайн.
+            </p>
+            <p hidden class="middle-info">
+                <b>Вы в сети.</b> Ждите, пока вам кинут бой, либо сами выберите себе соперника.
+            </p>
             <p hidden class="game-info">
                 У соперника осталось <b id="opponent-time"></b> сек. на ход
             </p>
@@ -39,7 +46,7 @@
                         <th>L</th>
                     </tr>
                     <tr>
-                        <td class="row-n">1</td>
+                        <th class="row-n">1</th>
                         <td id="0A"></td>
                         <td id="0B"></td>
                         <td id="0C"></td>
@@ -52,7 +59,7 @@
                         <td id="0L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">2</td>
+                        <th class="row-n">2</th>
                         <td id="1A"></td>
                         <td id="1B"></td>
                         <td id="1C"></td>
@@ -65,7 +72,7 @@
                         <td id="1L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">3</td>
+                        <th class="row-n">3</th>
                         <td id="2A"></td>
                         <td id="2B"></td>
                         <td id="2C"></td>
@@ -78,7 +85,7 @@
                         <td id="2L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">4</td>
+                        <th class="row-n">4</th>
                         <td id="3A"></td>
                         <td id="3B"></td>
                         <td id="3C"></td>
@@ -91,7 +98,7 @@
                         <td id="3L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">5</td>
+                        <th class="row-n">5</th>
                         <td id="4A"></td>
                         <td id="4B"></td>
                         <td id="4C"></td>
@@ -104,7 +111,7 @@
                         <td id="4L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">6</td>
+                        <th class="row-n">6</th>
                         <td id="5A"></td>
                         <td id="5B"></td>
                         <td id="5C"></td>
@@ -117,7 +124,7 @@
                         <td id="5L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">7</td>
+                        <th class="row-n">7</th>
                         <td id="6A"></td>
                         <td id="6B"></td>
                         <td id="6C"></td>
@@ -130,7 +137,7 @@
                         <td id="6L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">8</td>
+                        <th class="row-n">8</th>
                         <td id="7A"></td>
                         <td id="7B"></td>
                         <td id="7C"></td>
@@ -143,7 +150,7 @@
                         <td id="7L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">9</td>
+                        <th class="row-n">9</th>
                         <td id="8A"></td>
                         <td id="8B"></td>
                         <td id="8C"></td>
@@ -156,7 +163,7 @@
                         <td id="8L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">10</td>
+                        <th class="row-n">10</th>
                         <td id="9A"></td>
                         <td id="9B"></td>
                         <td id="9C"></td>
@@ -170,18 +177,25 @@
                     </tr>
                 </table>
             </div>
-            <button id="run-game">Начать игру</button>
+            <div style="margin-bottom: 40px" class="start">
+                <p>
+                    <a style="cursor: pointer" id="reset">Очистить поле</a>
+                </p>
+                <p>
+                    <button id="run-game">Готов!</button>
+                </p>
+            </div>
         </div>
-        <div hidden id="online" class="col-lg-6">
-            <h3>Список игроков онлайн</h3>
-            <p>Выберите игрока нужного вам соперника двойным кликом</p>
+        <div hidden class="col-lg-6 middle-info">
+            <h3>Ожидающие игроки</h3>
+            <p>Выберите нужного вам соперника и нажмите на него</p>
             <div class="list-online">
 
             </div>
         </div>
         <div hidden id="two-field" class="col-lg-6">
             <h3>Ваш ход</h3>
-            <p hidden class="game-info">
+            <p class="game-info">
                 У вас осталось <b id="my-time"></b> сек. на ход
             </p>
             <div>
@@ -200,7 +214,7 @@
                         <th>L</th>
                     </tr>
                     <tr>
-                        <td class="row-n">1</td>
+                        <th class="row-n">1</th>
                         <td id2="0A"></td>
                         <td id2="0B"></td>
                         <td id2="0C"></td>
@@ -213,7 +227,7 @@
                         <td id2="0L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">2</td>
+                        <th class="row-n">2</th>
                         <td id2="1A"></td>
                         <td id2="1B"></td>
                         <td id2="1C"></td>
@@ -226,7 +240,7 @@
                         <td id2="1L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">3</td>
+                        <th class="row-n">3</th>
                         <td id2="2A"></td>
                         <td id2="2B"></td>
                         <td id2="2C"></td>
@@ -239,7 +253,7 @@
                         <td id2="2L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">4</td>
+                        <th class="row-n">4</th>
                         <td id2="3A"></td>
                         <td id2="3B"></td>
                         <td id2="3C"></td>
@@ -252,7 +266,7 @@
                         <td id2="3L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">5</td>
+                        <th class="row-n">5</th>
                         <td id2="4A"></td>
                         <td id2="4B"></td>
                         <td id2="4C"></td>
@@ -265,7 +279,7 @@
                         <td id2="4L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">6</td>
+                        <th class="row-n">6</th>
                         <td id2="5A"></td>
                         <td id2="5B"></td>
                         <td id2="5C"></td>
@@ -278,7 +292,7 @@
                         <td id2="5L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">7</td>
+                        <th class="row-n">7</th>
                         <td id2="6A"></td>
                         <td id2="6B"></td>
                         <td id2="6C"></td>
@@ -291,7 +305,7 @@
                         <td id2="6L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">8</td>
+                        <th class="row-n">8</th>
                         <td id2="7A"></td>
                         <td id2="7B"></td>
                         <td id2="7C"></td>
@@ -304,7 +318,7 @@
                         <td id2="7L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">9</td>
+                        <th class="row-n">9</th>
                         <td id2="8A"></td>
                         <td id2="8B"></td>
                         <td id2="8C"></td>
@@ -317,7 +331,7 @@
                         <td id2="8L"></td>
                     </tr>
                     <tr>
-                        <td class="row-n">10</td>
+                        <th class="row-n">10</th>
                         <td id2="9A"></td>
                         <td id2="9B"></td>
                         <td id2="9C"></td>

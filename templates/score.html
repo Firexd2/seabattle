@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Статистика</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6">
+            <h3 style="text-align: center">TOP</h3>
+            <table style="font-size: 18px" class="table">
+                <thead>
+                <tr style="color: gray">
+                    <th>№</th>
+                    <th>NAME</th>
+                    <th>WIN</th>
+                    <th>LOSE</th>
+                    <th>OUT</th>
+                    <th>ALL</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for n, user in enumerate(users, start=1) %}
+                <tr style="text-align: center">
+                    <td>{{ n }}</td>
+                    <th scope="row">{{ user.username }}</th>
+                    <td style="color: #00cd00">{{ user.score.win }}</td>
+                    <td style="color: red">{{ user.score.lose }}</td>
+                    <td style="color: gray">{{ user.score.out }}</td>
+                    <td>{{ user.score.games }}</td>
+                </tr>
+                {% end %}
+                </tbody>
+            </table>
+            <div style="text-align: center">
+                <button onclick="location.href='/'">Назад</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>

@@ -5,22 +5,35 @@ $(function () {
     const my_field = $('#my-table-ship');
     const second_march = 60;
 
+    $('#reset').on('click', function () {
+        reset_field()
+    });
+
+    $(function () {
+        const td = $('td');
+        if (td.height() !== td.width()) {
+            td.height(td.width())
+        }
+    })
+
+    function reset_field() {
+        my_field.find('td').removeClass();opponent_field.find('td').removeClass()
+    }
 
     $(my_field.find('td')).on('click', function () {
         if (my_field.attr('class').split(' ').indexOf('block') === -1) {
             const classBlock = 'block-ship-table';
-            if ($(this).attr('class') !== 'row-n') {
-                if (check_class($(this))) {
-                    if (check_diagonale($(this))) {
-                        if (check_length_ship($(this)) < 5) {
-                            $(this).addClass(classBlock)
-                        }
+            if (check_class($(this))) {
+                if (check_diagonale($(this))) {
+                    if (check_length_ship($(this)) < 5) {
+                        $(this).addClass(classBlock)
                     }
-                } else {
-                    $(this).removeClass(classBlock)
                 }
+            } else {
+                $(this).removeClass(classBlock)
             }
         }
+
     });
 
     function check_class(element) {
@@ -158,14 +171,12 @@ $(function () {
 
                 current_item_field = item_field.eq(i);
 
-                if (!(current_item_field.attr('class') === 'row-n')) {
-                    if (!(check_class(item_field.eq(i)))) {
-                        coordinate_ships += current_item_field.attr('id') + '-'
-                    }
+                if (!(check_class(item_field.eq(i)))) {
+                    coordinate_ships += current_item_field.attr('id') + '-'
                 }
             }
 
-            const online_socket = new WebSocket('ws://127.0.0.1:8888/ws/online/' + nick + '/');
+            const online_socket = new WebSocket('ws://' + location.host + '/ws/online/' + nick + '/');
 
             online_socket.onopen = function () {
                 my_field.addClass('block');
@@ -181,15 +192,16 @@ $(function () {
                         }
 
                         if (!(html)) {
-                            html = 'Список онлайна пуст'
+                            html = '<span style="font-size: 18px">Список пуст</span>'
                         }
 
                         $('.list-online').html(html);
-                        $('#online').show()
+                        $('.middle-info').show();
+                        $('.start').hide();
                     } else if (ev.trigger === 'game') {
                         const user = ev.game;
-                        const id = $('#nickname').text() + user;
-                        const game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
+                        const id = nick + user;
+                        const game_socket = new WebSocket('ws://' + location.host + '/ws/game/' + id + '/' + coordinate_ships + '/' + nick + '/');
                         game_socket.onopen = function () {
                             online_socket.close();
                             gaming(game_socket, false)
@@ -201,7 +213,7 @@ $(function () {
 
                     const user = $(this).text();
                     const id = user + $('#nickname').text();
-                    const game_socket = new WebSocket('ws://127.0.0.1:8888/ws/game/' + id + '/' + coordinate_ships + '/');
+                    const game_socket = new WebSocket('ws://' + location.host + '/ws/game/' + id + '/' + coordinate_ships + '/' + nick + '/');
                     game_socket.onopen = function () {
                         online_socket.send(user);
                         online_socket.close();
@@ -263,36 +275,44 @@ $(function () {
 
                     });
                     game_socket.onmessage = function (ev) {
-                        ev = JSON.parse(ev.data);
+                        if (ev.data === 'opponent_out') {
+                            alert('Противник покинул игру. Победа ваша!');
+                            game_socket.close(1000, 'victory');
+                            location.reload()
+                        } else {
+                            ev = JSON.parse(ev.data);
+                            if (ev.trigger === 'def') {
+                                const def = ev.def;
+                                if (def.coordinate) {
+                                    opponent_field.find($('td[id2="' + def.coordinate + '"]')).removeClass().addClass(def.status);
+                                }
+                                if ('past pass'.indexOf(def.status) !== -1) {
+                                    _march(false)
+                                } else if (def.status === 'corrupted') {
+                                    my_time_element.text(second_march);
+                                } else if (def.status === 'victory') {
+                                    alert('Вы выиграли!');
+                                    game_socket.close(1000, 'victory');
+                                    location.reload()
+                                }
 
-                        if (ev.trigger === 'def') {
-                            const def = ev.def;
-                            if (def.coordinate) {
-                                opponent_field.find($('td[id2="' + def.coordinate + '"]')).removeClass().addClass(def.status);
-                            }
-                            if ('past pass'.indexOf(def.status) !== -1) {
-                                _march(false)
-                            } else if (def.status === 'corrupted') {
-                                my_time_element.text(second_march);
-                            } else if (def.status === 'victory') {
-                                alert('Вы выиграли')
-                            }
-
-                        } else if (ev.trigger === 'attack') {
-                            const attack = ev.attack;
-                            if (attack.coordinate) {
-                                my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status);
-                            }
-                            if ('past pass'.indexOf(attack.status) !== -1) {
-                                _march(true)
-                            } else if (attack.status === 'corrupted') {
-                                opponent_time_element.text(second_march)
-                            } else if (attack.status === 'victory') {
-                                alert('Вы проиграли')
+                            } else if (ev.trigger === 'attack') {
+                                const attack = ev.attack;
+                                if (attack.coordinate) {
+                                    my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status);
+                                }
+                                if ('past pass'.indexOf(attack.status) !== -1) {
+                                    _march(true)
+                                } else if (attack.status === 'corrupted') {
+                                    opponent_time_element.text(second_march)
+                                } else if (attack.status === 'victory') {
+                                    alert('Вы проиграли');
+                                    game_socket.close(1000, 'lose');
+                                    location.reload()
+                                }
                             }
                         }
                     }
-
                 }
             }
 

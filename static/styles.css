@@ -72,3 +72,14 @@ h3, p {
 .panel-bar span {
     padding-left: 30px;
 }
+
+.user {
+    font-size: 18px;
+    color: gray;
+    cursor: pointer;
+    padding-bottom: 15px;
+}
+
+.user:hover {
+    color: black;
+}
