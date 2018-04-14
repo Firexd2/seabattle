@@ -23,14 +23,14 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for n, user in enumerate(users, start=1) %}
+                {% for n, score in enumerate(scores, start=1) %}
                 <tr style="text-align: center">
                     <td>{{ n }}</td>
-                    <th scope="row">{{ user.username }}</th>
-                    <td style="color: #00cd00">{{ user.score.win }}</td>
-                    <td style="color: red">{{ user.score.lose }}</td>
-                    <td style="color: gray">{{ user.score.out }}</td>
-                    <td>{{ user.score.games }}</td>
+                    <th scope="row">{{ score.score[0].username }}</th>
+                    <td style="color: #00cd00">{{ score.win }}</td>
+                    <td style="color: red">{{ score.lose }}</td>
+                    <td style="color: gray">{{ score.out }}</td>
+                    <td>{{ score.games }}</td>
                 </tr>
                 {% end %}
                 </tbody>

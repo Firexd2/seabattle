@@ -1,6 +1,9 @@
-td
-{
-    border: 1px solid #a49ca0;
+table {
+    margin-left: -15px;
+}
+
+td {
+    border: 1px solid #979cd7;
 }
 
 td {
@@ -23,16 +26,16 @@ tr th {
     font-weight: bold;
 }
 
-.block-ship {
-    height: 40px;
-    width: 40px;
-    background: black;
-    border-left: 1px solid #8573ff;
-    border-right: 1px solid #8573ff;
-}
+/*.block-ship {*/
+    /*height: 40px;*/
+    /*width: 40px;*/
+    /*background: black;*/
+    /*border-left: 1px solid #8573ff;*/
+    /*border-right: 1px solid #8573ff;*/
+/*}*/
 
 .block-ship-table {
-    background: black;
+    background: rgba(9, 0, 255, 0.67);
 }
 
 .corrupted, .victory {
@@ -40,7 +43,8 @@ tr th {
 }
 
 .past {
-    background: #d2d2d2;
+    background: #787878;
+    clip-path: circle(3px at 50% 50%);
 }
 
 .count-ship {
@@ -82,4 +86,22 @@ h3, p {
 
 .user:hover {
     color: black;
+}
+
+input[name=chat] {
+    width: calc(100% - 50px);
+}
+
+.messages {
+    min-height: 10px;
+    text-align: left;
+    background: ghostwhite;
+    margin-top: -4px;
+    padding-top: 5px;
+}
+
+.item-chat {
+    color: gray;
+    padding-left: 20px;
+    margin-bottom: 3px;
 }

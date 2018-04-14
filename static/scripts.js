@@ -202,9 +202,10 @@ $(function () {
                         const user = ev.game;
                         const id = nick + user;
                         const game_socket = new WebSocket('ws://' + location.host + '/ws/game/' + id + '/' + coordinate_ships + '/' + nick + '/');
+                        const chat_socket = new WebSocket('ws://' + location.host + '/ws/chat/' + id + '/' + nick + '/');
                         game_socket.onopen = function () {
                             online_socket.close();
-                            gaming(game_socket, false)
+                            gaming(game_socket, chat_socket, false)
                         }
                     }
                 };
@@ -214,14 +215,17 @@ $(function () {
                     const user = $(this).text();
                     const id = user + $('#nickname').text();
                     const game_socket = new WebSocket('ws://' + location.host + '/ws/game/' + id + '/' + coordinate_ships + '/' + nick + '/');
+                    const chat_socket = new WebSocket('ws://' + location.host + '/ws/chat/' + id + '/' + nick + '/');
                     game_socket.onopen = function () {
                         online_socket.send(user);
                         online_socket.close();
-                        gaming(game_socket, true)
+                        gaming(game_socket, chat_socket, true)
                     }
                 });
 
-                function gaming(game_socket, march) {
+                function gaming(game_socket, chat_socket, march) {
+
+                    const audio_past = new Audio(); audio_past.src = '/static/sounds/gun.mp3';
 
                     $('.start-info').hide();
                     $('.middle-info').hide();
@@ -274,10 +278,12 @@ $(function () {
                         }
 
                     });
+
                     game_socket.onmessage = function (ev) {
                         if (ev.data === 'opponent_out') {
                             alert('Противник покинул игру. Победа ваша!');
                             game_socket.close(1000, 'victory');
+                            chat_socket.close();
                             location.reload()
                         } else {
                             ev = JSON.parse(ev.data);
@@ -287,12 +293,16 @@ $(function () {
                                     opponent_field.find($('td[id2="' + def.coordinate + '"]')).removeClass().addClass(def.status);
                                 }
                                 if ('past pass'.indexOf(def.status) !== -1) {
+                                    if (def.status === 'past') {
+                                        audio_past.play();
+                                    }
                                     _march(false)
                                 } else if (def.status === 'corrupted') {
                                     my_time_element.text(second_march);
                                 } else if (def.status === 'victory') {
                                     alert('Вы выиграли!');
                                     game_socket.close(1000, 'victory');
+                                    chat_socket.close();
                                     location.reload()
                                 }
 
@@ -302,16 +312,31 @@ $(function () {
                                     my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status);
                                 }
                                 if ('past pass'.indexOf(attack.status) !== -1) {
+                                    if (attack.status === 'past') {
+                                        audio_past.play();
+                                    }
                                     _march(true)
                                 } else if (attack.status === 'corrupted') {
                                     opponent_time_element.text(second_march)
                                 } else if (attack.status === 'victory') {
                                     alert('Вы проиграли');
                                     game_socket.close(1000, 'lose');
+                                    chat_socket.close();
                                     location.reload()
                                 }
                             }
                         }
+                    };
+
+                    $('button[name=chat]').on('click', function () {
+                        const input = $('input[name=chat]');
+                        chat_socket.send(input.val());
+                        $('.messages').prepend('<p class="item-chat"><b>Вы:</b> ' + input.val() + '</p>');
+                        input.val('')
+                    });
+
+                    chat_socket.onmessage = function (ev) {
+                        $('.messages').prepend('<p class="item-chat"><b>Соперник:</b> ' + ev.data + '</p>')
                     }
                 }
             }

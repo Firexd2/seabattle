@@ -17,7 +17,7 @@ class LogoutHandler(tornado.web.RequestHandler):
 class ScoreHandler(tornado.web.RequestHandler):
 
     def get(self):
-        self.render('score.html', users=User.select().order_by(User.score))
+        self.render('score.html', scores=Score.select().order_by(-Score.win))
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -47,6 +47,39 @@ class MainHandler(tornado.web.RequestHandler):
                 self.write('Не верный пароль')
 
 
+class WSChatHandler(tornado.websocket.WebSocketHandler):
+
+    chats = dict()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.id = self.nickname = ''
+
+    @property
+    def get_opponent_object(self):
+        return [self.chats[self.id][key] for key in self.chats[self.id] if key != self.nickname][0]
+
+    def check_origin(self, origin):
+        return True
+
+    def open(self, id, nick):
+        self.id = id
+        self.nickname = nick
+        if not self.chats.get(id):
+            self.chats[id] = {nick: self}
+        else:
+            _dict = self.chats[id]
+            _dict.update({nick: self})
+
+    def on_message(self, message):
+        oponent = self.get_opponent_object
+        oponent.write_message(message)
+
+    def on_close(self):
+        if self.chats.get(self.id):
+            self.chats.pop(self.id, None)
+
+
 class WSGameHandler(tornado.websocket.WebSocketHandler):
 
     games = dict()
@@ -57,7 +90,11 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         # состояние поля
         # 0 - пусто, 1 - есть блок корабля, 2 - мимо, 3 - подбит
         self.field = {x: 0 for x in [str(n) + letter for letter in 'ABCDEFGHKL' for n in list(range(10))]}
-        self.id = self.opponent = self.nickname = ''
+        self.id = self.nickname = ''
+
+    @property
+    def get_opponent_object(self):
+        return [self.games[self.id][key] for key in self.games[self.id] if key != self.nickname][0]
 
     def check_origin(self, origin):
         return True
@@ -69,17 +106,15 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
             self.field[coordinate] = 1
 
         if not self.games.get(id):
-            self.games[id] = {'one': self}
-            self.opponent = 'two'
+            self.games[id] = {nick: self}
         else:
             _dict = self.games[id]
-            _dict.update({'two': self})
-            self.opponent = 'one'
+            _dict.update({nick: self})
 
         print(self.games)
 
     def on_message(self, coordinate):
-        opponent = self.games[self.id][self.opponent]
+        opponent = self.get_opponent_object
         opponent_field = opponent.field
         if coordinate:
             if opponent_field[coordinate]:
@@ -113,7 +148,7 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
                 score.lose += 1
                 score.games += 1
         else:
-            self.games[self.id][self.opponent].write_message('opponent_out')
+            self.get_opponent_object.write_message('opponent_out')
             score.out += 1
             score.games += 1
         score.save()
@@ -169,6 +204,7 @@ def main():
         [
             (r'/', MainHandler),
             (r'/ws/game/(?P<id>\w+)/(?P<coordinates>\S+)/(?P<nick>\S+)/', WSGameHandler),
+            (r'/ws/chat/(?P<id>\w+)/(?P<nick>\w+)/', WSChatHandler),
             (r'/ws/online/(?P<nick>\w+)/', WSOnlineHandler),
             (r'/logout/', LogoutHandler),
             (r'/score/', ScoreHandler),

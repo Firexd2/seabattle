@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<div style="text-align: center" class="container">
+<div style="text-align: center; padding-bottom: 50px" class="container">
     <div class="row">
         <div class="panel-bar">
             <span>Вы зашли как <a id="nickname">{{ nickname }}</a>. <a href="/logout/">Выйти</a></span>
@@ -344,6 +344,17 @@
                         <td id2="9L"></td>
                     </tr>
                 </table>
+            </div>
+        </div>
+    </div>
+    <div style="margin-top: 30px" hidden class="row game-info">
+        <div class="col-lg-12">
+            <div>
+                <input name="chat" placeholder="Введите сообщение сопернику" type="text"><button style="width: 50px" name="chat"> >> </button>
+            </div>
+            <div class="messages">
+                <p class="item-chat">
+                </p>
             </div>
         </div>
     </div>
