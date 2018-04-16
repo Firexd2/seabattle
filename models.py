@@ -22,3 +22,7 @@ class User(BaseModel):
     username = CharField()
     password = CharField()
     score = ForeignKeyField(Score, related_name='score')
+
+
+Score.create_table()
+User.create_table()

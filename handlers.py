@@ -84,17 +84,37 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
 
     games = dict()
 
+    letter = 'ABCDEFGHKL'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # состояние поля
         # 0 - пусто, 1 - есть блок корабля, 2 - мимо, 3 - подбит
-        self.field = {x: 0 for x in [str(n) + letter for letter in 'ABCDEFGHKL' for n in list(range(10))]}
+        self.field = {x: 0 for x in (str(n) + letter for letter in self.letter for n in list(range(10)))}
         self.id = self.nickname = ''
+
+    def definition_dead(self, coordinate):
+        movement = ((-1, 0), (1, 0), (0, 1), (0, -1))
+        field = self.get_opponent_object.field
+
+        for route in movement:
+
+            for m in list(range(4)):
+                try:
+                    cell = field.get(str(int(coordinate[0]) + route[0] * m) +
+                                     str(self.letter[self.letter.index(coordinate[1]) + route[1] * m]))
+                    if cell == 1:
+                        return False
+                    if cell != 3:
+                        break
+                except (KeyError, IndexError):
+                    break
+        return True
 
     @property
     def get_opponent_object(self):
-        return [self.games[self.id][key] for key in self.games[self.id] if key != self.nickname][0]
+        return tuple(self.games[self.id][key] for key in self.games[self.id] if key != self.nickname)[0]
 
     def check_origin(self, origin):
         return True
@@ -116,10 +136,15 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, coordinate):
         opponent = self.get_opponent_object
         opponent_field = opponent.field
+
         if coordinate:
-            if opponent_field[coordinate]:
+            print(opponent_field[coordinate])
+            if opponent_field[coordinate] == 1:
                 opponent_field[coordinate] = 3
-                status = 'corrupted'
+                if not self.definition_dead(coordinate):
+                    status = 'corrupted'
+                else:
+                    status = 'dead'
             else:
                 opponent_field[coordinate] = 2
                 status = 'past'

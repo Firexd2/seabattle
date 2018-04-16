@@ -14,7 +14,7 @@ $(function () {
         if (td.height() !== td.width()) {
             td.height(td.width())
         }
-    })
+    });
 
     function reset_field() {
         my_field.find('td').removeClass();opponent_field.find('td').removeClass()
@@ -62,30 +62,14 @@ $(function () {
     function check_length_ship(element) {
         let length = 1;
         const movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
-
-
-        circumvention({element: element, last:'start'});
-
-        function circumvention(parameters) {
-            const element = parameters.element;
-            const last = parameters.last;
-            const coorditate_digit = parseInt(element.attr('id')[0]);
-            const coordinate_letter = element.attr('id')[1];
-            let current_index_off;
-            let future_element;
-            for (let i=0;i<movement.length;i++) {
-                current_index_off = letters.indexOf(coordinate_letter);
-                future_element = $('#' + (coorditate_digit + movement[i][0]) + (letters[current_index_off + movement[i][1]]));
-                if (!(check_class(future_element))) {
-                    if (last !== 'start') {
-                        if (last.attr('id') !== future_element.attr('id')) {
-                            length += 1;
-                            circumvention({element: future_element, last: element});
-                        }
-                    } else {
-                        length += 1;
-                        circumvention({element: future_element, last: element});
-                    }
+        const coorditate_digit = parseInt(element.attr('id')[0]);
+        const coordinate_letter = element.attr('id')[1];
+        for (let i=0;i<4;i++) {
+            for (let j=1;j<5;j++) {
+                if (!(check_class($('#' + (coorditate_digit + movement[i][0] * j) + (letters[letters.indexOf(coordinate_letter) + movement[i][1] * j]))))) {
+                    length += 1
+                } else {
+                    break
                 }
             }
         }
@@ -94,7 +78,7 @@ $(function () {
 
     function check_count_ship() {
 
-        const movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
+        const movement = [[1, 0], [0, 1]];
         let ships = [0, 0, 0, 0];
         let length;
 
@@ -110,36 +94,16 @@ $(function () {
         for (let i=0;i<10;i++) {
             for (let j=0;j<10;j++) {
                 if (!(array_ships[i][j])) {
-
                     if (!(check_class($('#' + i + letters[j])))) {
                         array_ships[i][j] = 1;
                         length = 1;
-
-                        search_ship({element: $('#' + i + letters[j]), last: 'start'});
-
-                        function search_ship(parameters) {
-                            const element = parameters.element;
-                            const last = parameters.last;
-                            const coorditate_digit = parseInt(element.attr('id')[0]);
-                            const coordinate_letter = element.attr('id')[1];
-                            let current_index_off;
-                            let future_element;
-                            for (let q = 0; q < movement.length; q++) {
-                                current_index_off = letters.indexOf(coordinate_letter);
-                                future_element = $('#' + (coorditate_digit + movement[q][0]) + (letters[current_index_off + movement[q][1]]));
-                                if (!(check_class(future_element))) {
-                                    if (last !== 'start') {
-                                        if (last.attr('id') !== future_element.attr('id')) {
-                                            length += 1;
-                                            search_ship({element: future_element, last: element});
-                                        }
-                                    } else {
-                                        length += 1;
-                                        search_ship({element: future_element, last: element});
-                                    }
-                                    if (i + movement[q][0] >= 0 && j + movement[q][1] >= 0) {
-                                        array_ships[i + movement[q][0]][j + movement[q][1]] = 1;
-                                    }
+                        for (let q=0;q<2;q++) {
+                            for (let f=1;f<5;f++) {
+                                if (!(check_class($('#' + (i + movement[q][0] * f) + (letters[letters.indexOf(letters[j]) + movement[q][1] * f]))))) {
+                                    length += 1;
+                                    array_ships[i + movement[q][0] * f][j + movement[q][1] * f] = 1;
+                                } else {
+                                    break
                                 }
                             }
                         }
@@ -148,9 +112,6 @@ $(function () {
                 }
             }
         }
-
-        ships[2] = ships[2] / 2;
-        ships[3] = ships[3] / 2;
         return ships
     }
 
@@ -225,11 +186,11 @@ $(function () {
 
                 function gaming(game_socket, chat_socket, march) {
 
-                    const audio_past = new Audio(); audio_past.src = '/static/sounds/gun.mp3';
 
                     $('.start-info').hide();
                     $('.middle-info').hide();
                     $('.game-info').show();
+
 
                     const my_time_element = $('#my-time');
                     const opponent_time_element = $('#opponent-time');
@@ -237,6 +198,25 @@ $(function () {
                     my_time_element.text(second_march);opponent_time_element.text(second_march);
 
                     let timer_march;
+
+
+                    function mark_around(coordinate, field) {
+                        const coorditate_digit = parseInt(coordinate[0]);
+                        const coordinate_letter = coordinate[1];
+                        const movement = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+                        let current_index_off;
+                        let coordinate_with_movement;
+                        for (let i=0;i<movement.length;i++) {
+                            current_index_off = letters.indexOf(coordinate_letter);
+                            coordinate_with_movement = (coorditate_digit + movement[i][0]) + (letters[current_index_off + movement[i][1]]);
+                            if (field === 'opponent_field') {
+                                $('#' + coordinate_with_movement).addClass('past')
+                            } else if (field === 'my_field') {
+                                $('td[id2="' + coordinate_with_movement + '"]').addClass('past')
+                            }
+                        }
+                    }
+
 
                     function timer(element) {
                         let value = element.text() - 1;
@@ -251,12 +231,16 @@ $(function () {
 
                     function _march(march) {
                         let timer_element;
+
+                        const my = $('#my');
+                        const opponent= $('#two-field');
+
                         clearInterval(timer_march);
                         if (march) {
-                            opponent_field.removeClass('hide-field'); my_field.addClass('hide-field');
+                            opponent.removeClass('hide-field'); my.addClass('hide-field');
                             timer_element = my_time_element;
                         } else {
-                            my_field.removeClass('hide-field'); opponent_field.addClass('hide-field');
+                            my.removeClass('hide-field'); opponent.addClass('hide-field');
                             timer_element = opponent_time_element
                         }
                         timer_element.text(second_march);
@@ -272,11 +256,8 @@ $(function () {
                         if (opponent_field.attr('class') !== 'hide-field') {
                             if (!($(this).attr('class'))) {
                                 game_socket.send($(this).attr('id2'));
-                            } else {
-                                alert('Эта клетка уже помечена')
                             }
                         }
-
                     });
 
                     game_socket.onmessage = function (ev) {
@@ -290,15 +271,32 @@ $(function () {
                             if (ev.trigger === 'def') {
                                 const def = ev.def;
                                 if (def.coordinate) {
-                                    opponent_field.find($('td[id2="' + def.coordinate + '"]')).removeClass().addClass(def.status);
+                                    $('td[id2="' + def.coordinate + '"]').removeClass().addClass(def.status);
+                                }
+                                if (def.status === 'dead') {
+                                    const movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
+                                    const coorditate_digit = parseInt(def.coordinate[0]);
+                                    const coordinate_letter = def.coordinate[1];
+                                    let elem;
+                                    for (let i=0;i<4;i++) {
+                                        for (let j=1;j<5;j++) {
+                                            elem = $('td[id2="' + (coorditate_digit + movement[i][0] * j) + (letters[letters.indexOf(coordinate_letter) + movement[i][1] * j])+ '"]');
+                                            if (elem.attr('class') === 'corrupted') {
+                                                elem.removeClass().addClass('dead')
+                                            } else {
+                                                break
+                                            }
+                                        }
+                                    }
                                 }
                                 if ('past pass'.indexOf(def.status) !== -1) {
                                     if (def.status === 'past') {
-                                        audio_past.play();
+                                        // audio
                                     }
                                     _march(false)
-                                } else if (def.status === 'corrupted') {
+                                } else if ('corrupted dead'.indexOf(def.status) !== -1) {
                                     my_time_element.text(second_march);
+                                    mark_around(def.coordinate, 'my_field')
                                 } else if (def.status === 'victory') {
                                     alert('Вы выиграли!');
                                     game_socket.close(1000, 'victory');
@@ -313,11 +311,12 @@ $(function () {
                                 }
                                 if ('past pass'.indexOf(attack.status) !== -1) {
                                     if (attack.status === 'past') {
-                                        audio_past.play();
+                                        $('#past').click()
                                     }
                                     _march(true)
-                                } else if (attack.status === 'corrupted') {
-                                    opponent_time_element.text(second_march)
+                                } else if ('corrupted dead'.indexOf(attack.status) !== -1) {
+                                    opponent_time_element.text(second_march);
+                                    mark_around(attack.coordinate, 'opponent_field')
                                 } else if (attack.status === 'victory') {
                                     alert('Вы проиграли');
                                     game_socket.close(1000, 'lose');

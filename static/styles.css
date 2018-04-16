@@ -38,12 +38,22 @@ tr th {
     background: rgba(9, 0, 255, 0.67);
 }
 
-.corrupted, .victory {
+
+#opponent-table-ship .corrupted, .victory {
+    background: red;
+    clip-path: polygon(10% 0%, 0% 10%, 40% 50%, 0% 90%, 10% 100%, 50% 60%, 90% 100%, 100% 90%, 60% 50%, 100% 10%, 90% 0%, 50% 40%);
+}
+
+#opponent-table-ship .dead {
+    background: #b90000;
+}
+
+#my-table-ship .corrupted, .victory, .dead {
     background: red;
 }
 
 .past {
-    background: #787878;
+    background: #b2b2b2;
     clip-path: circle(3px at 50% 50%);
 }
 
@@ -101,7 +111,7 @@ input[name=chat] {
 }
 
 .item-chat {
-    color: gray;
+    color: #505050;
     padding-left: 20px;
     margin-bottom: 3px;
 }
