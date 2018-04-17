@@ -1,10 +1,16 @@
 import os
+import time
+
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
 
 from models import User, Score
+
+
+letters = 'ABCDEFGHKL'
+coordinates = [[str(digit)+letter for letter in letters] for digit in list(range(10))]
 
 
 class LogoutHandler(tornado.web.RequestHandler):
@@ -25,7 +31,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         auth = self.get_cookie('auth', default=None)
         if auth:
-            self.render('home.html', nickname=auth)
+            self.render('home.html', nickname=auth, coordinates=coordinates)
         else:
             self.render('login.html')
 
@@ -84,14 +90,12 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
 
     games = dict()
 
-    letter = 'ABCDEFGHKL'
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # состояние поля
         # 0 - пусто, 1 - есть блок корабля, 2 - мимо, 3 - подбит
-        self.field = {x: 0 for x in (str(n) + letter for letter in self.letter for n in list(range(10)))}
+        self.field = {coordinate: 0 for coordinate in sum(coordinates, [])}
         self.id = self.nickname = ''
 
     def definition_dead(self, coordinate):
@@ -103,7 +107,7 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
             for m in list(range(4)):
                 try:
                     cell = field.get(str(int(coordinate[0]) + route[0] * m) +
-                                     str(self.letter[self.letter.index(coordinate[1]) + route[1] * m]))
+                                     str(letters[letters.index(coordinate[1]) + route[1] * m]))
                     if cell == 1:
                         return False
                     if cell != 3:
@@ -114,7 +118,9 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
 
     @property
     def get_opponent_object(self):
-        return tuple(self.games[self.id][key] for key in self.games[self.id] if key != self.nickname)[0]
+        game = self.games.get(self.id)
+        if game:
+            return tuple(self.games[self.id][key] for key in game if key != self.nickname)[0]
 
     def check_origin(self, origin):
         return True
@@ -130,6 +136,7 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         else:
             _dict = self.games[id]
             _dict.update({nick: self})
+            self.get_opponent_object.write_message('opponent_ready')
 
         print(self.games)
 
@@ -138,8 +145,8 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         opponent_field = opponent.field
 
         if coordinate:
-            print(opponent_field[coordinate])
-            if opponent_field[coordinate] == 1:
+            print(str(opponent_field[coordinate]) + '-' + coordinate)
+            if opponent_field[coordinate]:
                 opponent_field[coordinate] = 3
                 if not self.definition_dead(coordinate):
                     status = 'corrupted'
@@ -173,7 +180,9 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
                 score.lose += 1
                 score.games += 1
         else:
-            self.get_opponent_object.write_message('opponent_out')
+            opponent_obgect = self.get_opponent_object
+            if opponent_obgect:
+                opponent_obgect.write_message('opponent_out')
             score.out += 1
             score.games += 1
         score.save()

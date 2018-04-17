@@ -4,6 +4,7 @@ $(function () {
     const opponent_field = $('#opponent-table-ship');
     const my_field = $('#my-table-ship');
     const second_march = 60;
+    let flag = true;
 
     $('#reset').on('click', function () {
         reset_field()
@@ -15,6 +16,29 @@ $(function () {
             td.height(td.width())
         }
     });
+
+    function tablo(message, color='default') {
+        const colors = {'default': '#f7f7f7', 'red': '#b90000;', 'light_red': '#ffa3a7',
+            'green': '#5DF75C', 'light_green': '#a8f7af', 'yellow': '#F7F6C5'};
+        const tablo = $('#tablo');
+
+        tablo.css({'background': colors[color]}).html(message);
+
+        // if (animate) {
+        //     function animated() {
+        //         let new_color;
+        //         if (tablo.css('background-color') === 'rgb(233, 233, 233)') {
+        //
+        //             new_color = '#f7f7f7'
+        //         } else {
+        //             new_color = '#e9e9e9'
+        //         }
+        //
+        //         tablo.animate({backgroundColor: new_color}, 1000, 'linear', animated)
+        //     }
+        //     animated()
+        // }
+    }
 
     function reset_field() {
         my_field.find('td').removeClass();opponent_field.find('td').removeClass()
@@ -123,6 +147,8 @@ $(function () {
 
         } else {
 
+            tablo('Ожидание игры');
+
             const item_field = my_field.find('td');
             let coordinate_ships = '';
             let current_item_field;
@@ -186,18 +212,27 @@ $(function () {
 
                 function gaming(game_socket, chat_socket, march) {
 
+                    tablo('Ожидаем соперника');
 
-                    $('.start-info').hide();
                     $('.middle-info').hide();
-                    $('.game-info').show();
-
 
                     const my_time_element = $('#my-time');
                     const opponent_time_element = $('#opponent-time');
-
-                    my_time_element.text(second_march);opponent_time_element.text(second_march);
-
                     let timer_march;
+
+                    function start_game() {
+                        tablo('Игра началась!');
+                        $('.start-info').hide();
+                        $('.game-info').show();
+                        $('#two-field').show();
+                        _march(march);
+                        my_time_element.text(second_march);
+                        opponent_time_element.text(second_march);
+                    }
+
+                    if (!(march)) {
+                        start_game()
+                    }
 
 
                     function mark_around(coordinate, field) {
@@ -247,14 +282,11 @@ $(function () {
                         timer_march = setInterval(timer, 1000, timer_element)
                     }
 
-                    _march(march);
-
-                    $('#online').hide();
-                    $('#two-field').show();
-
                     $(opponent_field.find('td')).on('click', function () {
-                        if (opponent_field.attr('class') !== 'hide-field') {
-                            if (!($(this).attr('class'))) {
+                        if ($('#two-field').attr('class').indexOf('hide-field') === -1) {
+                            if (!($(this).attr('class')) && flag) {
+                                tablo('Ожидаем ответ от сервера');
+                                flag = false;
                                 game_socket.send($(this).attr('id2'));
                             }
                         }
@@ -266,14 +298,18 @@ $(function () {
                             game_socket.close(1000, 'victory');
                             chat_socket.close();
                             location.reload()
+                        } else if (ev.data === 'opponent_ready') {
+                            start_game()
                         } else {
                             ev = JSON.parse(ev.data);
                             if (ev.trigger === 'def') {
                                 const def = ev.def;
                                 if (def.coordinate) {
                                     $('td[id2="' + def.coordinate + '"]').removeClass().addClass(def.status);
+                                    flag = true;
                                 }
-                                if (def.status === 'dead') {
+                                if (def.status === 'dead' || def.status === 'victory') {
+                                    tablo('Вы уничтожили корабль!', 'green');
                                     const movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
                                     const coorditate_digit = parseInt(def.coordinate[0]);
                                     const coordinate_letter = def.coordinate[1];
@@ -290,11 +326,13 @@ $(function () {
                                     }
                                 }
                                 if ('past pass'.indexOf(def.status) !== -1) {
+                                    tablo('Мимо!', 'yellow');
                                     if (def.status === 'past') {
                                         // audio
                                     }
                                     _march(false)
                                 } else if ('corrupted dead'.indexOf(def.status) !== -1) {
+                                    if (def.status === 'corrupted') {tablo('Вы подбили корабль', 'green')}
                                     my_time_element.text(second_march);
                                     mark_around(def.coordinate, 'my_field')
                                 } else if (def.status === 'victory') {
@@ -310,11 +348,17 @@ $(function () {
                                     my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status);
                                 }
                                 if ('past pass'.indexOf(attack.status) !== -1) {
+                                    tablo('Противник ударил мимо!', 'light_green');
                                     if (attack.status === 'past') {
                                         $('#past').click()
                                     }
                                     _march(true)
                                 } else if ('corrupted dead'.indexOf(attack.status) !== -1) {
+                                    if (attack.status === 'corrupted') {
+                                        tablo('Ваш корабль ранен', 'light_red')
+                                    } else {
+                                        tablo('Ваш корабль убит', 'red')
+                                    }
                                     opponent_time_element.text(second_march);
                                     mark_around(attack.coordinate, 'opponent_field')
                                 } else if (attack.status === 'victory') {
