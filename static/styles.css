@@ -26,14 +26,6 @@ tr th {
     font-weight: bold;
 }
 
-/*.block-ship {*/
-    /*height: 40px;*/
-    /*width: 40px;*/
-    /*background: black;*/
-    /*border-left: 1px solid #8573ff;*/
-    /*border-right: 1px solid #8573ff;*/
-/*}*/
-
 .block-ship-table {
     background: rgba(9, 0, 255, 0.67);
 }
@@ -65,9 +57,9 @@ tr th {
     opacity: 0.5;
 }
 
-.info {
-    position: absolute;
-}
+/*.info {*/
+    /*position: absolute;*/
+/*}*/
 
 h3, p {
     margin-top: 0;
@@ -80,7 +72,7 @@ h3, p {
 .panel-bar {
     height: 20px;
     text-align: left;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .panel-bar span {
@@ -124,10 +116,11 @@ input[name=chat] {
     background-color: #f7f7f7;
     padding: 5px 10px 5px 10px;
     margin: 20px 0 20px 0;
+    box-shadow: 0 0 3px #a2a2a2;
 }
 
-/*.fixed {*/
-    /*position: fixed;*/
-    /*top: 30px;*/
-    /*left: 10px;*/
-/*}*/
+
+.yellow {background-color: #F7F6C5 !important;}
+.red {background-color: #ffa3a7 !important;}
+.default {background-color: #f7f7f7 !important;}
+.green {background-color: #a8f7af !important;}

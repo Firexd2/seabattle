@@ -10,7 +10,7 @@ from models import User, Score
 
 
 letters = 'ABCDEFGHKL'
-coordinates = [[str(digit)+letter for letter in letters] for digit in list(range(10))]
+default_coordinates = [[str(digit)+letter for letter in letters] for digit in list(range(10))]
 
 
 class LogoutHandler(tornado.web.RequestHandler):
@@ -31,7 +31,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         auth = self.get_cookie('auth', default=None)
         if auth:
-            self.render('home.html', nickname=auth, coordinates=coordinates)
+            self.render('home.html', nickname=auth, coordinates=default_coordinates)
         else:
             self.render('login.html')
 
@@ -95,7 +95,7 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
 
         # состояние поля
         # 0 - пусто, 1 - есть блок корабля, 2 - мимо, 3 - подбит
-        self.field = {coordinate: 0 for coordinate in sum(coordinates, [])}
+        self.field = {coordinate: 0 for coordinate in sum(default_coordinates, [])}
         self.id = self.nickname = ''
 
     def definition_dead(self, coordinate):

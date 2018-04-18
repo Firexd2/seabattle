@@ -14,15 +14,8 @@ class Score(BaseModel):
     out = IntegerField(default=0)
     games = IntegerField(default=0)
 
-    # class Meta:
-    #     order_by = ['win']
-
 
 class User(BaseModel):
     username = CharField()
     password = CharField()
     score = ForeignKeyField(Score, related_name='score')
-
-
-Score.create_table()
-User.create_table()

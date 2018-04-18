@@ -10,6 +10,28 @@ $(function () {
         reset_field()
     });
 
+    // if (window.innerWidth <= 768) {
+    $(window).scroll(function () {
+        const tablo = $('#tablo');
+        if ($(this).scrollTop() > 50) {
+            if (!(tablo.attr('style'))) {
+                const left = (window.innerWidth - 300) / 2;
+                tablo.attr('style', 'position: fixed;z-index: 999;top:-30px;left:' + left + 'px');
+                tablo.animate({'top': 10}, 200)
+            }
+        } else {
+            tablo.attr('style', '')
+        }
+    });
+
+    function scrolltoField(field) {
+        if (window.innerWidth <= 768) {
+            const top = $(field).offset().top;
+            $('body,html').animate({scrollTop: top}, 1000);
+        }
+    }
+
+
     $(function () {
         const td = $('td');
         if (td.height() !== td.width()) {
@@ -18,11 +40,10 @@ $(function () {
     });
 
     function tablo(message, color='default') {
-        const colors = {'default': '#f7f7f7', 'red': '#b90000;', 'light_red': '#ffa3a7',
-            'green': '#5DF75C', 'light_green': '#a8f7af', 'yellow': '#F7F6C5'};
         const tablo = $('#tablo');
 
-        tablo.css({'background': colors[color]}).html(message);
+        tablo.removeClass();
+        tablo.addClass(color).html(message);
 
         // if (animate) {
         //     function animated() {
@@ -234,7 +255,6 @@ $(function () {
                         start_game()
                     }
 
-
                     function mark_around(coordinate, field) {
                         const coorditate_digit = parseInt(coordinate[0]);
                         const coordinate_letter = coordinate[1];
@@ -274,9 +294,11 @@ $(function () {
                         if (march) {
                             opponent.removeClass('hide-field'); my.addClass('hide-field');
                             timer_element = my_time_element;
+                            scrolltoField(opponent)
                         } else {
                             my.removeClass('hide-field'); opponent.addClass('hide-field');
-                            timer_element = opponent_time_element
+                            timer_element = opponent_time_element;
+                            scrolltoField(my)
                         }
                         timer_element.text(second_march);
                         timer_march = setInterval(timer, 1000, timer_element)
@@ -348,14 +370,14 @@ $(function () {
                                     my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status);
                                 }
                                 if ('past pass'.indexOf(attack.status) !== -1) {
-                                    tablo('Противник ударил мимо!', 'light_green');
+                                    tablo('Противник ударил мимо!', 'green');
                                     if (attack.status === 'past') {
                                         $('#past').click()
                                     }
                                     _march(true)
                                 } else if ('corrupted dead'.indexOf(attack.status) !== -1) {
                                     if (attack.status === 'corrupted') {
-                                        tablo('Ваш корабль ранен', 'light_red')
+                                        tablo('Ваш корабль ранен', 'red')
                                     } else {
                                         tablo('Ваш корабль убит', 'red')
                                     }
