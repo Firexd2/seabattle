@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Морской бой</title>
+<link href="https://fonts.googleapis.com/css?family=Neucha" rel="stylesheet">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ static_url('styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 <div style="text-align: center; padding-bottom: 50px" class="container">
-    <div class="row">
+    <div style="border-bottom: 1px solid #e9e9e9; padding: 8px 0 3px 0" class="row">
         <div class="panel-bar">
-            <span>Вы зашли как <a id="nickname">{{ nickname }}</a>. <a href="/logout/">Выйти</a></span>
-            <span><a href="/score/">Статистика</a></span>
+            <span>Привет, <a id="nickname">{{ nickname }}</a></span>
+            <span><a style="color: green" href="/score/">Статистика</a></span>
+            <span><a style="color: #c30000" href="/logout/">Выйти</a></span>
         </div>
     </div>
     <div style="height: 60px" class="row">
@@ -21,14 +23,14 @@
         </div>
     </div>
     <div class="row">
-        <div id="my" class="col-lg-6">
+        <div style="padding-top: 20px" id="my" class="col-lg-6">
             <h3 class="start-info">Ваше поле</h3>
             <h3 hidden class="game-info">Ход соперника</h3>
             <p class="start">Расположите ваши корабли по классическим правилам морского боя. <br>
                 Нажмите на кнопку <b>"Готов"</b>, чтобы выйти в онлайн.
             </p>
             <p hidden class="middle-info">
-                <b>Вы в сети.</b> Ждите, пока вам кинут бой, либо сами выберите себе соперника.
+                <b>Вы в сети.</b> Ждите, пока вас вызовут на бой, либо сами выберите соперника
             </p>
             <p hidden class="game-info">
                 У соперника осталось <b id="opponent-time"></b> сек. на ход
@@ -52,17 +54,17 @@
                 </table>
             </div>
             <div style="margin-bottom: 40px" class="start">
-                <p>
+                <p style="margin: 5px 0 15px 0">
                     <a style="cursor: pointer" id="reset">Очистить поле</a>
                 </p>
                 <p>
-                    <button id="run-game">Готов!</button>
+                    <button class="btn btn-success" id="run-game">Готов!</button>
                 </p>
             </div>
         </div>
-        <div hidden class="col-lg-6 middle-info">
+        <div style="padding-top: 20px" hidden class="col-lg-6 middle-info">
             <h3>Ожидающие игроки</h3>
-            <p>Выберите нужного вам соперника и нажмите на него</p>
+            <p>Выберите соперника для начала игры</p>
             <div class="list-online">
 
             </div>
@@ -107,6 +109,5 @@
 {#<audio id="past" preload="auto" onclick="this.play()" src="/static/sounds/gun.mp3"></audio>#}
 </body>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-<script src="//cdn.jsdelivr.net/jquery.color-animation/1/mainfile"></script>
 <script src="{{ static_url('scripts.js') }}"></script>
 </html>

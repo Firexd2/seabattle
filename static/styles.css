@@ -1,14 +1,15 @@
+body {
+    font-family: 'Neucha', cursive;
+}
 table {
     margin-left: -15px;
 }
 
 td {
     border: 1px solid #979cd7;
-}
-
-td {
     height: 40px;
     width: 40px;
+    cursor: pointer;
 }
 
 tr th {
@@ -26,11 +27,6 @@ tr th {
     font-weight: bold;
 }
 
-.block-ship-table {
-    background: rgba(9, 0, 255, 0.67);
-}
-
-
 #opponent-table-ship .corrupted, .victory {
     background: red;
     clip-path: polygon(10% 0%, 0% 10%, 40% 50%, 0% 90%, 10% 100%, 50% 60%, 90% 100%, 100% 90%, 60% 50%, 100% 10%, 90% 0%, 50% 40%);
@@ -41,7 +37,7 @@ tr th {
 }
 
 #my-table-ship .corrupted, .victory, .dead {
-    background: red;
+    background: red !important;
 }
 
 .past {
@@ -124,3 +120,12 @@ input[name=chat] {
 .red {background-color: #ffa3a7 !important;}
 .default {background-color: #f7f7f7 !important;}
 .green {background-color: #a8f7af !important;}
+
+.form-control, .btn {
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    height: 45px;
+}

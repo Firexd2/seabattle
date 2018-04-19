@@ -1,7 +1,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<form method="POST" id="my-control">
-    <p style="font-size: 20px">Зарегистрируйся, или войди: </p>
-    <input style="font-size: 20px" name="username" placeholder="Ник" type="text">
-    <input style="font-size: 20px" name="password" placeholder="Пароль" type="password">
-    <button style="font-size: 20px">Войти</button>
-</form>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Морской бой</title>
+<link href="https://fonts.googleapis.com/css?family=Neucha" rel="stylesheet">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{{ static_url('styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="container">
+    <div style="margin-top: 100px" class="row">
+        <div class="col-lg-4 col-md-offset-4">
+            <form method="POST" id="my-control">
+                <p style="font-size: 20px">Зарегистрируйтесь, или войдите: </p>
+                <input class="form-control" name="username" placeholder="Ник" type="text">
+                <input class="form-control" name="password" placeholder="Пароль" type="password">
+                <button class="btn btn-info" style="font-size: 20px">Войти</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="{{ static_url('scripts.js') }}"></script>
+</html>

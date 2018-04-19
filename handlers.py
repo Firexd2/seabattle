@@ -1,16 +1,15 @@
 import os
-import time
-
 import tornado.web
 import tornado.websocket
 import tornado.ioloop
 import tornado.web
-
 from models import User, Score
 
 
 letters = 'ABCDEFGHKL'
-default_coordinates = [[str(digit)+letter for letter in letters] for digit in list(range(10))]
+digits = list(range(10))
+
+default_coordinates = [[str(digit)+letter for letter in letters] for digit in digits]
 
 
 class LogoutHandler(tornado.web.RequestHandler):

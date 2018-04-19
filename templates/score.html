@@ -3,23 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Статистика</title>
+    <link href="https://fonts.googleapis.com/css?family=Neucha" rel="stylesheet">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Neucha', cursive;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
+<div style="margin-bottom: 100px" class="container">
     <div class="row">
-        <div class="col-lg-6">
-            <h3 style="text-align: center">TOP</h3>
+        <div class="col-lg-6 col-md-offset-3">
+            <h3 style="text-align: center">ТОП</h3>
             <table style="font-size: 18px" class="table">
                 <thead>
                 <tr style="color: gray">
                     <th>№</th>
-                    <th>NAME</th>
-                    <th>WIN</th>
-                    <th>LOSE</th>
-                    <th>OUT</th>
-                    <th>ALL</th>
+                    <th>ИМЯ</th>
+                    <th>ПОБ.</th>
+                    <th>ПОР.</th>
+                    <th>ВЫХ.</th>
+                    <th>ИГРЫ</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -36,7 +42,7 @@
                 </tbody>
             </table>
             <div style="text-align: center">
-                <button onclick="location.href='/'">Назад</button>
+                <button class="btn btn-info" onclick="location.href='/'">Назад</button>
             </div>
         </div>
     </div>

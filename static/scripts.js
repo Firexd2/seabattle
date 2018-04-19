@@ -10,7 +10,6 @@ $(function () {
         reset_field()
     });
 
-    // if (window.innerWidth <= 768) {
     $(window).scroll(function () {
         const tablo = $('#tablo');
         if ($(this).scrollTop() > 50) {
@@ -31,7 +30,6 @@ $(function () {
         }
     }
 
-
     $(function () {
         const td = $('td');
         if (td.height() !== td.width()) {
@@ -41,24 +39,8 @@ $(function () {
 
     function tablo(message, color='default') {
         const tablo = $('#tablo');
-
         tablo.removeClass();
         tablo.addClass(color).html(message);
-
-        // if (animate) {
-        //     function animated() {
-        //         let new_color;
-        //         if (tablo.css('background-color') === 'rgb(233, 233, 233)') {
-        //
-        //             new_color = '#f7f7f7'
-        //         } else {
-        //             new_color = '#e9e9e9'
-        //         }
-        //
-        //         tablo.animate({backgroundColor: new_color}, 1000, 'linear', animated)
-        //     }
-        //     animated()
-        // }
     }
 
     function reset_field() {
@@ -66,19 +48,31 @@ $(function () {
     }
 
     $(my_field.find('td')).on('click', function () {
+
+        const movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
+        let id;
+        let elem;
+
         if (my_field.attr('class').split(' ').indexOf('block') === -1) {
             const classBlock = 'block-ship-table';
             if (check_class($(this))) {
                 if (check_diagonale($(this))) {
-                    if (check_length_ship($(this)) < 5) {
+                    if (check_length_ship_and_color($(this)) < 5) {
                         $(this).addClass(classBlock)
                     }
                 }
             } else {
-                $(this).removeClass(classBlock)
+                $(this).removeClass(classBlock).css({'background': 'none'});
+                // красим в другой цвет корабли, которые получились после удаления промежуточного блока
+                id = $(this).attr('id');
+                for (let i=0;i<4;i++) {
+                    elem = $('#' + (parseInt(id[0]) + movement[i][0]) + (letters[letters.indexOf(id[1]) + movement[i][1]]));
+                    if (elem.attr('class')) {
+                        check_length_ship_and_color(elem)
+                    }
+                }
             }
         }
-
     });
 
     function check_class(element) {
@@ -86,7 +80,6 @@ $(function () {
             return true
         } else return element.attr('class').length === 0;
     }
-
 
     // проверка на возможность расположения блоков кораблей
     function check_diagonale(element) {
@@ -104,20 +97,32 @@ $(function () {
     }
 
     // подсчет длинны корабля
-    function check_length_ship(element) {
+    function check_length_ship_and_color(element) {
+
+        function paint_ship(cordinates) {
+            const colors = {1: '#00ff00', 2: '#00ffff', 3: '#191970', 4: '#8b008b'};
+            for (let i=0;i<cordinates.length;i++) {
+                $('#' + cordinates[i]).css({'background': colors[coordinates.length]})
+            }
+        }
         let length = 1;
         const movement = [[-1, 0], [1, 0], [0, 1], [0, -1]];
         const coorditate_digit = parseInt(element.attr('id')[0]);
         const coordinate_letter = element.attr('id')[1];
+        let coordinates = [element.attr('id')];
+        let new_coordinate;
         for (let i=0;i<4;i++) {
             for (let j=1;j<5;j++) {
-                if (!(check_class($('#' + (coorditate_digit + movement[i][0] * j) + (letters[letters.indexOf(coordinate_letter) + movement[i][1] * j]))))) {
-                    length += 1
+                new_coordinate = (coorditate_digit + movement[i][0] * j) + (letters[letters.indexOf(coordinate_letter) + movement[i][1] * j]);
+                if (!(check_class($('#' + new_coordinate)))) {
+                    length += 1;
+                    coordinates.push(new_coordinate)
                 } else {
                     break
                 }
             }
         }
+        paint_ship(coordinates);
         return length
     }
 
@@ -367,7 +372,7 @@ $(function () {
                             } else if (ev.trigger === 'attack') {
                                 const attack = ev.attack;
                                 if (attack.coordinate) {
-                                    my_field.find($('#' + attack.coordinate)).removeClass().addClass(attack.status);
+                                    my_field.find($('#' + attack.coordinate)).removeClass().css({'background': 'none'}).addClass(attack.status);
                                 }
                                 if ('past pass'.indexOf(attack.status) !== -1) {
                                     tablo('Противник ударил мимо!', 'green');
@@ -408,6 +413,14 @@ $(function () {
 
 
             // alert('Корабли расположены не по правилам')
+        }
+    });
+
+    $('input[name=username]').on('input', function () {
+        const $this = $(this);
+        const regexp = /^[a-z0-9\s]+$/i;
+        if ($this.val().length > 11 || !regexp.test($this.val())) {
+            $this.val($this.val().slice(0,-1))
         }
     })
 });
