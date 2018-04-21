@@ -19,4 +19,3 @@ class User(BaseModel):
     password = CharField()
     score = ForeignKeyField(Score, related_name='score')
 
-
