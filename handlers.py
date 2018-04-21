@@ -106,8 +106,12 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
 
             for m in list(range(4)):
                 try:
+
                     cell = field.get(str(int(coordinate[0]) + route[0] * m) +
                                      str(letters[letters.index(coordinate[1]) + route[1] * m]))
+
+                    if int(coordinate[0]) + route[0] * m < 0 or letters.index(coordinate[1]) + route[1] * m < 0:
+                        raise KeyError
                     if cell == 1:
                         return False
                     if cell != 3:

@@ -44,7 +44,7 @@ $(function () {
     }
 
     function reset_field() {
-        my_field.find('td').removeClass();opponent_field.find('td').removeClass()
+        my_field.find('td').removeClass().attr('style', '');
     }
 
     $(my_field.find('td')).on('click', function () {
