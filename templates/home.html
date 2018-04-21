@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Морской бой</title>
-<link href="https://fonts.googleapis.com/css?family=Neucha" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Neucha" rel="stylesheet">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ static_url('styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,14 +40,14 @@
                     <tr>
                         <th></th>
                         {% for letter in 'ABCDEFGHKL' %}
-                            <th>{{ letter }}</th>
+                        <th>{{ letter }}</th>
                         {% end %}
                     </tr>
                     {% for n, row in enumerate(coordinates, start=1) %}
                     <tr>
                         <th class="row-n">{{ n }}</th>
                         {% for cell in row %}
-                            <td id="{{ cell }}"></td>
+                        <td id="{{ cell }}"></td>
                         {% end %}
                     </tr>
                     {% end %}
@@ -79,14 +79,14 @@
                     <tr>
                         <th></th>
                         {% for letter in 'ABCDEFGHKL' %}
-                            <th>{{ letter }}</th>
+                        <th>{{ letter }}</th>
                         {% end %}
                     </tr>
                     {% for n, row in enumerate(coordinates, start=1) %}
                     <tr>
                         <th class="row-n">{{ n }}</th>
                         {% for cell in row %}
-                            <td id2="{{ cell }}"></td>
+                        <td id2="{{ cell }}"></td>
                         {% end %}
                     </tr>
                     {% end %}
@@ -106,7 +106,6 @@
         </div>
     </div>
 </div>
-{#<audio id="past" preload="auto" onclick="this.play()" src="/static/sounds/gun.mp3"></audio>#}
 </body>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 <script src="{{ static_url('scripts.js') }}"></script>

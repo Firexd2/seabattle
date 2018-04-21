@@ -5,3 +5,4 @@ venv
 .idea
 .DS_Store
 *.log
+dev_settings.py

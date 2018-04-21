@@ -1,14 +1,13 @@
-import os
+import asyncio
 import tornado.web
 import tornado.websocket
-import tornado.ioloop
 import tornado.web
+from peewee import DoesNotExist
+from config import objects
 from models import User, Score
 
 
-letters = 'ABCDEFGHKL'
-digits = list(range(10))
-
+letters, digits = 'ABCDEFGHKL', list(range(10))
 default_coordinates = [[str(digit)+letter for letter in letters] for digit in digits]
 
 
@@ -21,35 +20,37 @@ class LogoutHandler(tornado.web.RequestHandler):
 
 class ScoreHandler(tornado.web.RequestHandler):
 
-    def get(self):
-        self.render('score.html', scores=Score.select().order_by(-Score.win))
+    async def get(self):
+        score = await objects.execute(Score.select().order_by(-Score.win))
+        self.render('score.html', scores=score)
 
 
 class MainHandler(tornado.web.RequestHandler):
 
-    def get(self):
+    async def get(self):
         auth = self.get_cookie('auth', default=None)
         if auth:
             self.render('home.html', nickname=auth, coordinates=default_coordinates)
         else:
             self.render('login.html')
 
-    def post(self):
+    async def post(self):
         username = self.get_argument('username')
         password = self.get_argument('password')
 
-        user = User.get_or_none(username=username)
-        if not user:
-            score = Score.create()
-            User.create(username=username, password=password, score=score)
-            self.set_cookie('auth', username)
-            self.redirect('/')
-        else:
+        try:
+            user = await objects.get(User, username=username)
             if user.password == password:
                 self.set_cookie('auth', username)
                 self.redirect('/')
             else:
                 self.write('Не верный пароль')
+        except DoesNotExist:
+            score = await objects.create(Score)
+            await objects.create(User, username=username, password=password, score=score)
+            self.set_cookie('auth', username)
+            self.redirect('/')
+
 
 
 class WSChatHandler(tornado.websocket.WebSocketHandler):
@@ -67,7 +68,7 @@ class WSChatHandler(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
 
-    def open(self, id, nick):
+    async def open(self, id, nick):
         self.id = id
         self.nickname = nick
         if not self.chats.get(id):
@@ -169,22 +170,25 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         opponent.write_message({'trigger': 'attack', 'attack': response})
 
     def on_close(self):
-        score = Score.select().join(User).where(User.username == self.nickname)[0]
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.after_close())
+
+    async def after_close(self):
+        score = await objects.get(Score.select().join(User).where(User.username == self.nickname))
         if self.close_code == 1000:
             reason = self.close_reason
             if reason == 'victory':
                 score.win += 1
-                score.games += 1
             elif reason == 'lose':
                 score.lose += 1
-                score.games += 1
         else:
-            opponent_obgect = self.get_opponent_object
-            if opponent_obgect:
-                opponent_obgect.write_message('opponent_out')
-            score.out += 1
-            score.games += 1
-        score.save()
+            opponent_object = self.get_opponent_object
+            if opponent_object:
+                opponent_object.write_message('opponent_out')
+                score.out += 1
+
+        score.games += 1
+        await objects.update(score)
 
         self.games.pop(self.id, None)
         print('game over')
@@ -230,27 +234,3 @@ class WSOnlineHandler(tornado.websocket.WebSocketHandler):
             list_user = _object.list_user
             list_user.update({'trigger': 'list_user'})
             _object.write_message(list_user)
-
-
-def main():
-    app = tornado.web.Application(
-        [
-            (r'/', MainHandler),
-            (r'/ws/game/(?P<id>\w+)/(?P<coordinates>\S+)/(?P<nick>\S+)/', WSGameHandler),
-            (r'/ws/chat/(?P<id>\w+)/(?P<nick>\w+)/', WSChatHandler),
-            (r'/ws/online/(?P<nick>\w+)/', WSOnlineHandler),
-            (r'/logout/', LogoutHandler),
-            (r'/score/', ScoreHandler),
-        ],
-        template_path=os.path.join(os.path.dirname(__file__), "templates"),
-        static_path=os.path.join(os.path.dirname(__file__), "static"),
-        xsrf_cookies=False,
-        debug=True,
-        autoreload=True,
-    )
-    app.listen(8888)
-    tornado.ioloop.IOLoop.current().start()
-
-
-if __name__ == "__main__":
-    main()

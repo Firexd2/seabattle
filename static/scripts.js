@@ -81,7 +81,6 @@ $(function () {
         } else return element.attr('class').length === 0;
     }
 
-    // проверка на возможность расположения блоков кораблей
     function check_diagonale(element) {
         const coorditate_digit = parseInt(element.attr('id')[0]);
         const coordinate_letter = element.attr('id')[1];
@@ -96,7 +95,6 @@ $(function () {
         return true
     }
 
-    // подсчет длинны корабля
     function check_length_ship_and_color(element) {
 
         function paint_ship(cordinates) {
@@ -132,7 +130,6 @@ $(function () {
         let ships = [0, 0, 0, 0];
         let length;
 
-        // Делаем массив для отметок о проверенных кораблях
         const n = 11, m = 11;
         let array_ships = [];
         for (let i=0; i<m; i++) {
@@ -166,12 +163,7 @@ $(function () {
     }
 
     $('#run-game').on('click', function () {
-        if (check_count_ship().toString() === '4,3,2,1') {
-
-
-
-
-        } else {
+        if (check_count_ship().toString() !== '4,3,2,1') {
 
             tablo('Ожидание игры');
 
@@ -277,7 +269,6 @@ $(function () {
                         }
                     }
 
-
                     function timer(element) {
                         let value = element.text() - 1;
                         element.text(value);
@@ -354,9 +345,6 @@ $(function () {
                                 }
                                 if ('past pass'.indexOf(def.status) !== -1) {
                                     tablo('Мимо!', 'yellow');
-                                    if (def.status === 'past') {
-                                        // audio
-                                    }
                                     _march(false)
                                 } else if ('corrupted dead'.indexOf(def.status) !== -1) {
                                     if (def.status === 'corrupted') {tablo('Вы подбили корабль', 'green')}
@@ -376,9 +364,6 @@ $(function () {
                                 }
                                 if ('past pass'.indexOf(attack.status) !== -1) {
                                     tablo('Противник ударил мимо!', 'green');
-                                    if (attack.status === 'past') {
-                                        $('#past').click()
-                                    }
                                     _march(true)
                                 } else if ('corrupted dead'.indexOf(attack.status) !== -1) {
                                     if (attack.status === 'corrupted') {
@@ -410,9 +395,8 @@ $(function () {
                     }
                 }
             }
-
-
-            // alert('Корабли расположены не по правилам')
+        } else {
+            alert('Корабли следует расположить в виде: 1 четырёхпалубный, 2 трехпалубные, 3 двухпалубные, 4 однопалубные')
         }
     });
 

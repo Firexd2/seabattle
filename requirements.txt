@@ -1,0 +1,6 @@
+tornado==5.0.1
+peewee==3.2.2
+psycopg2==2.7.4
+psycopg2-binary==2.7.4
+aiopg==0.13.2
+peewee-async==0.5.12

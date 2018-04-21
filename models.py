@@ -1,6 +1,5 @@
-from peewee import PostgresqlDatabase, Model, CharField, IntegerField, ForeignKeyField
-
-psql_db = PostgresqlDatabase('den', user='den')
+from peewee import Model, CharField, IntegerField, ForeignKeyField
+from config import *
 
 
 class BaseModel(Model):
@@ -19,3 +18,5 @@ class User(BaseModel):
     username = CharField()
     password = CharField()
     score = ForeignKeyField(Score, related_name='score')
+
+

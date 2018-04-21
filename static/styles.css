@@ -28,12 +28,12 @@ tr th {
 }
 
 #opponent-table-ship .corrupted, .victory {
-    background: red;
+    background: red !important;
     clip-path: polygon(10% 0%, 0% 10%, 40% 50%, 0% 90%, 10% 100%, 50% 60%, 90% 100%, 100% 90%, 60% 50%, 100% 10%, 90% 0%, 50% 40%);
 }
 
 #opponent-table-ship .dead {
-    background: #b90000;
+    background: #b90000 !important;
 }
 
 #my-table-ship .corrupted, .victory, .dead {
@@ -41,7 +41,7 @@ tr th {
 }
 
 .past {
-    background: #b2b2b2;
+    background: #b2b2b2 !important;
     clip-path: circle(3px at 50% 50%);
 }
 
@@ -52,10 +52,6 @@ tr th {
 .hide-field {
     opacity: 0.5;
 }
-
-/*.info {*/
-    /*position: absolute;*/
-/*}*/
 
 h3, p {
     margin-top: 0;
