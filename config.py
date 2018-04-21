@@ -3,7 +3,7 @@ from tornado.options import options, parse_command_line
 import logging
 import peewee_async
 
-psql_db = peewee_async.PostgresqlDatabase('den', user='den')
+psql_db = peewee_async.PostgresqlDatabase('seabattle', user='admin', password='seabattleistop')
 objects = peewee_async.Manager(psql_db)
 objects.database.allow_sync = False
 objects.database.allow_sync = logging.ERROR

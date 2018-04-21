@@ -163,7 +163,7 @@ $(function () {
     }
 
     $('#run-game').on('click', function () {
-        if (check_count_ship().toString() !== '4,3,2,1') {
+        if (check_count_ship().toString() === '4,3,2,1') {
 
             tablo('Ожидание игры');
 
