@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ static_url('styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 </head>
 <body>
 <div style="text-align: center; padding-bottom: 50px" class="container">
@@ -54,8 +55,13 @@
                 </table>
             </div>
             <div style="margin-bottom: 40px" class="start">
-                <p style="margin: 5px 0 15px 0">
-                    <a style="cursor: pointer" id="reset">Очистить поле</a>
+                <p class="control">
+                    <a style="cursor: pointer" id="reset"><i class="fa fa-eraser" aria-hidden="true"></i>
+                        Очистить поле
+                    </a>
+                    <a style="cursor: pointer" id="random"><i class="fa fa-random" aria-hidden="true"></i>
+                        Случайным образом
+                    </a>
                 </p>
                 <p>
                     <button class="btn btn-success" id="run-game">Готов!</button>

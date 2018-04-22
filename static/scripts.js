@@ -3,11 +3,26 @@ $(function () {
     const letters = 'ABCDEFGHKL';
     const opponent_field = $('#opponent-table-ship');
     const my_field = $('#my-table-ship');
+    const colors = {1: '#00ff00', 2: '#00ffff', 3: '#191970', 4: '#8b008b'};
     const second_march = 60;
     let flag = true;
 
+    const clear_array = function array_ships() {
+        let array_ships = [];
+        for (let i=0; i<11; i++) {
+            array_ships[i] = [];
+            for (let j=0; j<11; j++) {
+                array_ships[i][j] = 0;
+            }}
+        return array_ships
+    };
+
     $('#reset').on('click', function () {
         reset_field()
+    });
+
+    $('#random').on('click', function () {
+        random_ships()
     });
 
     $(window).scroll(function () {
@@ -45,6 +60,112 @@ $(function () {
 
     function reset_field() {
         my_field.find('td').removeClass().attr('style', '');
+    }
+
+    function random_ships() {
+
+        my_field.find('td').attr('style', '').removeClass();
+
+        let ships = [0, 4, 3, 2, 1];
+        const movement = [[1, 0], [0, 1]];
+        const all_movement = [[0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1]];
+        let current_size = 4;
+        let clear_array_ships = clear_array();
+        let random_coordinate;
+        let road;
+        let result_coordinates_ships = [];
+        let hypothetical_coordinates_ships = [];
+
+        function random() {
+            let random1;
+            let random2;
+            function random_digit() {
+                let rand = 0 - 0.5 + Math.random() * 10;
+                return Math.round(rand);
+            }
+            while (1) {
+                random1 = random_digit();
+                random2 = random_digit();
+                if (!clear_array_ships[random1][random2]) {
+                    return '' + random1 + random2
+                }
+            }
+        }
+
+
+        while (ships.some(elem => elem > 0)) {
+
+            random_coordinate = random();
+            road = movement[Math.round(Math.random())];
+
+            hypothetical_coordinates_ships.push(random_coordinate);
+
+            for (let size=1;size<current_size;size++) {
+
+                const one = parseInt(random_coordinate[0]) + road[0]*size;
+                const two = parseInt(random_coordinate[1]) + road[1]*size;
+
+                if (one < 10 && one > -1 && two < 10 && two > -1) {
+                    if (!(clear_array_ships[one][two])) {
+                        hypothetical_coordinates_ships.push('' + one + two)
+                    } else {
+                        hypothetical_coordinates_ships.length = 0;
+                    }
+                } else {
+                    hypothetical_coordinates_ships.length = 0
+                }
+            }
+
+
+            if (hypothetical_coordinates_ships.length > 0) {
+                let current_coordinate1;
+                let current_coordinate2;
+                for (let i=0;i<hypothetical_coordinates_ships.length;i++) {
+
+                    current_coordinate1 = parseInt(hypothetical_coordinates_ships[i][0]);
+                    current_coordinate2 = parseInt(hypothetical_coordinates_ships[i][1]);
+
+                    clear_array_ships[current_coordinate1][current_coordinate2] = 1;
+
+                    for (let j=0;j<all_movement.length;j++) {
+
+                        const one = current_coordinate1 + all_movement[j][0];
+                        const two = current_coordinate2 + all_movement[j][1];
+
+                        if (one < 10 && one > -1 && two < 10 && two > -1) {
+                            clear_array_ships[one][two] = 1;
+                        }
+                    }
+                }
+
+                for (let i=0;i<hypothetical_coordinates_ships.length;i++) {
+                    result_coordinates_ships.push(hypothetical_coordinates_ships[i])
+                }
+
+                hypothetical_coordinates_ships.length = 0;
+
+                ships[current_size] -= 1;
+                if (ships[current_size] === 0) {
+                    current_size -= 1
+                }
+            }
+
+
+
+        }
+
+        let block_colors = [4, 6, 6, 4];
+        let color;
+        for (let i=0;i<result_coordinates_ships.length;i++) {
+            for (let c=0;c<block_colors.length;c++) {
+                if (block_colors[c] !== 0) {
+                    block_colors[c] -= 1;
+                    color = colors[4-c];
+                    break
+                }
+            }
+            $('#' + result_coordinates_ships[i][0] + letters[result_coordinates_ships[i][1]]).attr('style', 'background:' + color).addClass('block-ship-table')
+        }
     }
 
     $(my_field.find('td')).on('click', function () {
@@ -98,7 +219,6 @@ $(function () {
     function check_length_ship_and_color(element) {
 
         function paint_ship(cordinates) {
-            const colors = {1: '#00ff00', 2: '#00ffff', 3: '#191970', 4: '#8b008b'};
             for (let i=0;i<cordinates.length;i++) {
                 $('#' + cordinates[i]).css({'background': colors[coordinates.length]})
             }
@@ -129,14 +249,7 @@ $(function () {
         const movement = [[1, 0], [0, 1]];
         let ships = [0, 0, 0, 0];
         let length;
-
-        const n = 11, m = 11;
-        let array_ships = [];
-        for (let i=0; i<m; i++) {
-            array_ships[i] = [];
-            for (let j=0; j<n; j++) {
-                array_ships[i][j] = 0;
-            }}
+        let array_ships = clear_array();
 
         for (let i=0;i<10;i++) {
             for (let j=0;j<10;j++) {
@@ -217,6 +330,9 @@ $(function () {
 
                 $('body').on('click', '.user', function () {
 
+                    tablo('<i class="fa fa-spinner fa-spin fa-fw"></i> Ожидание сервера');
+                    $('.middle-info').hide();
+
                     const user = $(this).text();
                     const id = user + $('#nickname').text();
                     const game_socket = new WebSocket('ws://' + location.host + '/ws/game/' + id + '/' + coordinate_ships + '/' + nick + '/');
@@ -230,13 +346,13 @@ $(function () {
 
                 function gaming(game_socket, chat_socket, march) {
 
-                    tablo('Ожидаем соперника');
-
-                    $('.middle-info').hide();
+                    tablo('<i class="fa fa-spinner fa-spin fa-fw"></i> Ожидаем соперника');
 
                     const my_time_element = $('#my-time');
                     const opponent_time_element = $('#opponent-time');
                     let timer_march;
+
+                    $('.middle-info').hide();
 
                     function start_game() {
                         tablo('Игра началась!');
@@ -303,7 +419,7 @@ $(function () {
                     $(opponent_field.find('td')).on('click', function () {
                         if ($('#two-field').attr('class').indexOf('hide-field') === -1) {
                             if (!($(this).attr('class')) && flag) {
-                                tablo('Ожидаем ответ от сервера');
+                                tablo('<i class="fa fa-spinner fa-spin fa-fw"></i> Ожидаем ответ от сервера');
                                 flag = false;
                                 game_socket.send($(this).attr('id2'));
                             }

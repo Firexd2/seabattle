@@ -68,7 +68,7 @@ class WSChatHandler(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
 
-    async def open(self, id, nick):
+    def open(self, id, nick):
         self.id = id
         self.nickname = nick
         if not self.chats.get(id):
@@ -106,7 +106,6 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
 
             for m in list(range(4)):
                 try:
-
                     cell = field.get(str(int(coordinate[0]) + route[0] * m) +
                                      str(letters[letters.index(coordinate[1]) + route[1] * m]))
 
@@ -129,27 +128,33 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
 
+    def check_for_repeated_call(self, nick, id):
+        for game_id in self.games.keys():
+            if game_id == nick + id[0:id.find(nick)]:
+                return True
+
     def open(self, id, coordinates, nick):
         self.id = id
         self.nickname = nick
+
         for coordinate in coordinates[:-1].split('-'):
             self.field[coordinate] = 1
 
         if not self.games.get(id):
-            self.games[id] = {nick: self}
+            if not self.check_for_repeated_call(nick, id):
+                self.games[id] = {nick: self}
+            else:
+                self.close(1006, 'repeat_socket')
         else:
             _dict = self.games[id]
             _dict.update({nick: self})
             self.get_opponent_object.write_message('opponent_ready')
-
-        print(self.games)
 
     def on_message(self, coordinate):
         opponent = self.get_opponent_object
         opponent_field = opponent.field
 
         if coordinate:
-            print(str(opponent_field[coordinate]) + '-' + coordinate)
             if opponent_field[coordinate]:
                 opponent_field[coordinate] = 3
                 if not self.definition_dead(coordinate):
@@ -186,17 +191,16 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
             elif reason == 'lose':
                 score.lose += 1
         else:
-            opponent_object = self.get_opponent_object
-            if opponent_object:
-                opponent_object.write_message('opponent_out')
-                score.out += 1
-
-        score.games += 1
-        await objects.update(score)
-
-        self.games.pop(self.id, None)
-        print('game over')
-        print(self.games)
+            try:
+                opponent_object = self.get_opponent_object
+                if opponent_object:
+                    opponent_object.write_message('opponent_out')
+                    score.out += 1
+                    score.games += 1
+                    await objects.update(score)
+                    self.games.pop(self.id, None)
+            except KeyError:
+                pass
 
 
 class WSOnlineHandler(tornado.websocket.WebSocketHandler):

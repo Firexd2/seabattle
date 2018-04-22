@@ -125,3 +125,12 @@ input[name=chat] {
 .form-control {
     height: 45px;
 }
+
+.control {
+    margin: 5px 0 15px 0;
+    font-size: 18px
+}
+
+.control a {
+    padding: 0 20px 0 20px;
+}
