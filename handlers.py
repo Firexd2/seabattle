@@ -190,6 +190,7 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
                 score.win += 1
             elif reason == 'lose':
                 score.lose += 1
+            score.games += 1
         else:
             try:
                 opponent_object = self.get_opponent_object
@@ -197,10 +198,10 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
                     opponent_object.write_message('opponent_out')
                     score.out += 1
                     score.games += 1
-                    await objects.update(score)
-                    self.games.pop(self.id, None)
             except KeyError:
                 pass
+        self.games.pop(self.id, None)
+        await objects.update(score)
 
 
 class WSOnlineHandler(tornado.websocket.WebSocketHandler):
