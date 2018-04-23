@@ -59,12 +59,12 @@ $(function () {
     }
 
     function reset_field() {
-        my_field.find('td').removeClass().attr('style', '');
+        my_field.find('td').removeClass().css({'background': 'none'});
     }
 
     function random_ships() {
 
-        my_field.find('td').attr('style', '').removeClass();
+        reset_field();
 
         let ships = [0, 4, 3, 2, 1];
         const movement = [[1, 0], [0, 1]];
@@ -164,7 +164,7 @@ $(function () {
                     break
                 }
             }
-            $('#' + result_coordinates_ships[i][0] + letters[result_coordinates_ships[i][1]]).attr('style', 'background:' + color).addClass('block-ship-table')
+            $('#' + result_coordinates_ships[i][0] + letters[result_coordinates_ships[i][1]]).css({'background': color}).addClass('block-ship-table')
         }
     }
 
