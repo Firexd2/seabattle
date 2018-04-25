@@ -27,6 +27,15 @@ $(function () {
 
     $(window).scroll(function () {
         const tablo = $('#tablo');
+        if ($('.game-info').is(':visible') && window.innerWidth <= 768) {
+            if ($(document).height() - $(window).height() - $(window).scrollTop() < 100) {
+                $('#message').hide()
+            } else {
+                $('#message').show();
+                $('#message').removeClass('new-message');
+            }
+        }
+
         if ($(this).scrollTop() > 50) {
             if (!(tablo.attr('style'))) {
                 const left = (window.innerWidth - 300) / 2;
@@ -36,6 +45,10 @@ $(function () {
         } else {
             tablo.attr('style', '')
         }
+    });
+
+    $('#message').on('click', function () {
+        scrolltoField($('.messages'))
     });
 
     function scrolltoField(field) {
@@ -296,9 +309,16 @@ $(function () {
 
             const online_socket = new WebSocket('ws://' + location.host + '/ws/online/' + nick + '/');
 
+            online_socket.onerror = function(error) {
+                alert("Ошибка " + error.message);
+            };
+
             online_socket.onopen = function () {
                 my_field.addClass('block');
                 $('#my-control').hide();
+
+                $('.middle-info').show();
+                scrolltoField($('.middle-info'));
 
                 online_socket.onmessage = function (ev) {
                     ev = JSON.parse(ev.data);
@@ -314,34 +334,30 @@ $(function () {
                         }
 
                         $('.list-online').html(html);
-                        $('.middle-info').show();
                         $('.start').hide();
-                    } else if (ev.trigger === 'game') {
-                        const user = ev.game;
-                        const id = nick + user;
-                        const game_socket = new WebSocket('ws://' + location.host + '/ws/game/' + id + '/' + coordinate_ships + '/' + nick + '/');
-                        const chat_socket = new WebSocket('ws://' + location.host + '/ws/chat/' + id + '/' + nick + '/');
+                    } else if (ev.trigger === 'offergame') {
+                        $('.middle-info').hide();
+                        tablo('<i class="fa fa-spinner fa-spin fa-fw"></i> Ожидаем ответ от сервера');
+                        online_socket.send('startgame ' + ev.id)
+                    } else if (ev.trigger === 'startgame') {
+                        const game_socket = new WebSocket('ws://' + location.host + '/ws/game/' + ev.id + '/' + coordinate_ships + '/' + nick + '/');
+                        const chat_socket = new WebSocket('ws://' + location.host + '/ws/chat/' + ev.id + '/' + nick + '/');
                         game_socket.onopen = function () {
                             online_socket.close();
-                            gaming(game_socket, chat_socket, false)
+                            gaming(game_socket, chat_socket, ev.march === 0)
                         }
+                    } else if (ev.trigger === 'busy') {
+                        $('.middle-info').show();
+                        tablo('Этот игрок уже начал игру')
                     }
                 };
 
                 $('body').on('click', '.user', function () {
-
+                   $('.middle-info').hide();
                     tablo('<i class="fa fa-spinner fa-spin fa-fw"></i> Ожидание сервера');
-                    $('.middle-info').hide();
-
-                    const user = $(this).text();
-                    const id = user + $('#nickname').text();
-                    const game_socket = new WebSocket('ws://' + location.host + '/ws/game/' + id + '/' + coordinate_ships + '/' + nick + '/');
-                    const chat_socket = new WebSocket('ws://' + location.host + '/ws/chat/' + id + '/' + nick + '/');
-                    game_socket.onopen = function () {
-                        online_socket.send(user);
-                        online_socket.close();
-                        gaming(game_socket, chat_socket, true)
-                    }
+                    const opponent_nick = $(this).text();
+                    const my_nick = $('#nickname').text();
+                    online_socket.send('newgame ' + my_nick + ' ' + opponent_nick);
                 });
 
                 function gaming(game_socket, chat_socket, march) {
@@ -362,10 +378,6 @@ $(function () {
                         _march(march);
                         my_time_element.text(second_march);
                         opponent_time_element.text(second_march);
-                    }
-
-                    if (!(march)) {
-                        start_game()
                     }
 
                     function mark_around(coordinate, field) {
@@ -432,8 +444,12 @@ $(function () {
                             game_socket.close(1000, 'victory');
                             chat_socket.close();
                             location.reload()
-                        } else if (ev.data === 'opponent_ready') {
+                        } else if (ev.data === 'startgame') {
                             start_game()
+                        } else if (ev.data === 'error') {
+                            game_socket.close(1010);
+                            alert('Произошла непредвиденная ошибка. Страница будет перезагружена. Пожалуйста, сообщите ' +
+                                'об этом сообщении разработчику')
                         } else {
                             ev = JSON.parse(ev.data);
                             if (ev.trigger === 'def') {
@@ -507,7 +523,12 @@ $(function () {
                     });
 
                     chat_socket.onmessage = function (ev) {
-                        $('.messages').prepend('<p class="item-chat"><b>Соперник:</b> ' + ev.data + '</p>')
+                        if (ev.data !== 'error') {
+                            $('.messages').prepend('<p class="item-chat"><b>Соперник:</b> ' + ev.data + '</p>');
+                            $('#message').addClass('new-message')
+                        } else {
+                            $('.messages').prepend('<p style="color: red" class="item-chat">' + 'Произошла ошибка' + '</p>')
+                        }
                     }
                 }
             }

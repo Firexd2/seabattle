@@ -52,7 +52,6 @@ class MainHandler(tornado.web.RequestHandler):
             self.redirect('/')
 
 
-
 class WSChatHandler(tornado.websocket.WebSocketHandler):
 
     chats = dict()
@@ -63,7 +62,10 @@ class WSChatHandler(tornado.websocket.WebSocketHandler):
 
     @property
     def get_opponent_object(self):
-        return [self.chats[self.id][key] for key in self.chats[self.id] if key != self.nickname][0]
+        try:
+            return [self.chats[self.id][key] for key in self.chats[self.id] if key != self.nickname][0]
+        except KeyError:
+            pass
 
     def check_origin(self, origin):
         return True
@@ -71,19 +73,21 @@ class WSChatHandler(tornado.websocket.WebSocketHandler):
     def open(self, id, nick):
         self.id = id
         self.nickname = nick
+
         if not self.chats.get(id):
-            self.chats[id] = {nick: self}
-        else:
-            _dict = self.chats[id]
-            _dict.update({nick: self})
+            self.chats[id] = {}
+
+        self.chats[id].update({nick: self})
 
     def on_message(self, message):
         oponent = self.get_opponent_object
-        oponent.write_message(message)
+        if oponent:
+            oponent.write_message(message)
+        else:
+            self.write_message('error')
 
     def on_close(self):
-        if self.chats.get(self.id):
-            self.chats.pop(self.id, None)
+        self.chats.pop(self.id, None)
 
 
 class WSGameHandler(tornado.websocket.WebSocketHandler):
@@ -121,17 +125,13 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
 
     @property
     def get_opponent_object(self):
-        game = self.games.get(self.id)
-        if game:
-            return tuple(self.games[self.id][key] for key in game if key != self.nickname)[0]
+        try:
+            return tuple(self.games[self.id][key] for key in self.games[self.id] if key != self.nickname)[0]
+        except KeyError:
+            pass
 
     def check_origin(self, origin):
         return True
-
-    def check_for_repeated_call(self, nick, id):
-        for game_id in self.games.keys():
-            if game_id == nick + id[0:id.find(nick)]:
-                return True
 
     def open(self, id, coordinates, nick):
         self.id = id
@@ -141,42 +141,43 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
             self.field[coordinate] = 1
 
         if not self.games.get(id):
-            if not self.check_for_repeated_call(nick, id):
-                self.games[id] = {nick: self}
-            else:
-                self.close(1006, 'repeat_socket')
-        else:
-            _dict = self.games[id]
-            _dict.update({nick: self})
-            self.get_opponent_object.write_message('opponent_ready')
+            self.games[id] = {}
+
+        self.games[id].update({nick: self})
+
+        if len(self.games[id]) == 2:
+            for object in self.games[id].values():
+                object.write_message('startgame')
 
     def on_message(self, coordinate):
         opponent = self.get_opponent_object
         opponent_field = opponent.field
-
-        if coordinate:
-            if opponent_field[coordinate]:
-                opponent_field[coordinate] = 3
-                if not self.definition_dead(coordinate):
-                    status = 'corrupted'
+        if opponent:
+            if coordinate:
+                if opponent_field[coordinate]:
+                    opponent_field[coordinate] = 3
+                    if not self.definition_dead(coordinate):
+                        status = 'corrupted'
+                    else:
+                        status = 'dead'
                 else:
-                    status = 'dead'
+                    opponent_field[coordinate] = 2
+                    status = 'past'
             else:
-                opponent_field[coordinate] = 2
-                status = 'past'
+                status = 'pass'
+
+            for field_item in opponent_field:
+                if opponent_field[field_item] == 1:
+                    break
+            else:
+                status = 'victory'
+
+            response = {'coordinate': coordinate, 'status': status}
+
+            self.write_message({'trigger': 'def', 'def': response})
+            opponent.write_message({'trigger': 'attack', 'attack': response})
         else:
-            status = 'pass'
-
-        for field_item in opponent_field:
-            if opponent_field[field_item] == 1:
-                break
-        else:
-            status = 'victory'
-
-        response = {'coordinate': coordinate, 'status': status}
-
-        self.write_message({'trigger': 'def', 'def': response})
-        opponent.write_message({'trigger': 'attack', 'attack': response})
+            self.write_message('error')
 
     def on_close(self):
         loop = asyncio.get_event_loop()
@@ -184,29 +185,29 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
 
     async def after_close(self):
         score = await objects.get(Score.select().join(User).where(User.username == self.nickname))
-        if self.close_code == 1000:
-            reason = self.close_reason
-            if reason == 'victory':
-                score.win += 1
-            elif reason == 'lose':
-                score.lose += 1
-            score.games += 1
-        else:
-            try:
+        if self.close_code != 1010:
+            if self.close_code == 1000:
+                reason = self.close_reason
+                if reason == 'victory':
+                    score.win += 1
+                elif reason == 'lose':
+                    score.lose += 1
+            else:
                 opponent_object = self.get_opponent_object
                 if opponent_object:
                     opponent_object.write_message('opponent_out')
                     score.out += 1
-                    score.games += 1
-            except KeyError:
-                pass
+
+            score.games += 1
+            await objects.update(score)
         self.games.pop(self.id, None)
-        await objects.update(score)
+
 
 
 class WSOnlineHandler(tornado.websocket.WebSocketHandler):
 
     online = dict()
+    await_game = dict()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -216,20 +217,42 @@ class WSOnlineHandler(tornado.websocket.WebSocketHandler):
         return True
 
     def open(self, nick):
-        self.online[nick] = {'self': self}
+        self.online[nick] = self
         self.nickname = nick
         self.notification_online_user()
         print("NewUser")
 
-    def on_message(self, message):
-        # Создание игры
-        _object = self.online[message]['self']
-        _object.write_message({'game': self.nickname, 'trigger': 'game'})
+    def check_for_repeated_call(self, nick, opponent_nick):
+        print(self.await_game.keys())
+        for game_id in self.await_game:
+            if nick in self.await_game[game_id] or opponent_nick in self.await_game[game_id]:
+                return True
 
-    def on_close(self):
-        self.online.pop(self.nickname)
-        self.notification_online_user()
-        print("UserLogOut")
+    def on_message(self, message):
+        message = message.split(' ')
+        trigger = message[0]
+
+        if trigger == 'newgame':
+            my_nick = message[1]
+            opponent_nick = message[2]
+            id_game = my_nick + opponent_nick
+
+            obj_opponent = self.online.get(opponent_nick)
+
+            if not self.check_for_repeated_call(my_nick, opponent_nick) and obj_opponent:
+                self.await_game[id_game] = (my_nick, opponent_nick)
+                obj_opponent.write_message({'id': id_game, 'trigger': 'offergame'})
+            else:
+                self.write_message({'trigger': 'busy'})
+        elif trigger == 'startgame':
+            id_game = message[1]
+            objects = self.await_game[id_game]
+            for march, name in enumerate(objects):
+                self.online[name].write_message({'id': id_game, 'trigger': 'startgame', 'march': march})
+                self.online.pop(name)
+
+            self.notification_online_user()
+            self.await_game.pop(id_game, None)
 
     @property
     def list_user(self):
@@ -238,8 +261,9 @@ class WSOnlineHandler(tornado.websocket.WebSocketHandler):
 
     def notification_online_user(self):
         # Обновляем у всех подключенных пользователей список онлайна
+        print(self.online)
         for user in self.online:
-            _object = self.online[user]['self']
+            _object = self.online[user]
             list_user = _object.list_user
             list_user.update({'trigger': 'list_user'})
             _object.write_message(list_user)

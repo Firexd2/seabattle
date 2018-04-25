@@ -134,3 +134,33 @@ input[name=chat] {
 .control a {
     padding: 0 20px 0 20px;
 }
+
+.list-online {
+    margin-bottom: 100px;
+}
+
+#message {
+    display: none;
+    position: fixed;
+    cursor: pointer;
+    left: 20px;
+    bottom: 20px;
+    opacity: 0.3;
+}
+
+.new-message {
+    animation: 1.2s ease-in-out 0s normal none infinite running trambling-animation;
+    color: red;
+    opacity: 0.8 !important;
+}
+@keyframes trambling-animation {
+    0%, 50%, 100% {
+        transform: rotate(0deg);
+    }
+    10%, 30% {
+        transform: rotate(-10deg);
+    }
+    20%, 40% {
+        transform: rotate(10deg);
+    }
+}
