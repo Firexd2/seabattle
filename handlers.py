@@ -97,8 +97,7 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # состояние поля
-        # 0 - пусто, 1 - есть блок корабля, 2 - мимо, 3 - подбит
+        # 0 - null, 1 - block ship, 2 - pass, 3 - corrupted
         self.field = {coordinate: 0 for coordinate in sum(default_coordinates, [])}
         self.id = self.nickname = ''
 
@@ -203,7 +202,6 @@ class WSGameHandler(tornado.websocket.WebSocketHandler):
         self.games.pop(self.id, None)
 
 
-
 class WSOnlineHandler(tornado.websocket.WebSocketHandler):
 
     online = dict()
@@ -220,10 +218,8 @@ class WSOnlineHandler(tornado.websocket.WebSocketHandler):
         self.online[nick] = self
         self.nickname = nick
         self.notification_online_user()
-        print("NewUser")
 
     def check_for_repeated_call(self, nick, opponent_nick):
-        print(self.await_game.keys())
         for game_id in self.await_game:
             if nick in self.await_game[game_id] or opponent_nick in self.await_game[game_id]:
                 return True
@@ -249,21 +245,22 @@ class WSOnlineHandler(tornado.websocket.WebSocketHandler):
             objects = self.await_game[id_game]
             for march, name in enumerate(objects):
                 self.online[name].write_message({'id': id_game, 'trigger': 'startgame', 'march': march})
-                self.online.pop(name)
-
-            self.notification_online_user()
             self.await_game.pop(id_game, None)
 
     @property
     def list_user(self):
-        # Формируем список текущего онлайна
         return {'user_online': [nickname for nickname in self.online.keys() if nickname != self.nickname]}
 
     def notification_online_user(self):
-        # Обновляем у всех подключенных пользователей список онлайна
-        print(self.online)
         for user in self.online:
             _object = self.online[user]
             list_user = _object.list_user
             list_user.update({'trigger': 'list_user'})
-            _object.write_message(list_user)
+            try:
+                _object.write_message(list_user)
+            except tornado.websocket.WebSocketClosedError:
+                self.online.pop(_object.nickname, None)
+
+    def on_close(self):
+        self.online.pop(self.nickname, None)
+        self.notification_online_user()

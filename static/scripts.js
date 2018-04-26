@@ -197,7 +197,6 @@ $(function () {
                 }
             } else {
                 $(this).removeClass(classBlock).css({'background': 'none'});
-                // красим в другой цвет корабли, которые получились после удаления промежуточного блока
                 id = $(this).attr('id');
                 for (let i=0;i<4;i++) {
                     elem = $('#' + (parseInt(id[0]) + movement[i][0]) + (letters[letters.indexOf(id[1]) + movement[i][1]]));
@@ -373,7 +372,7 @@ $(function () {
                     function start_game() {
                         tablo('Игра началась!');
                         $('.start-info').hide();
-                        $('.game-info').show();
+                        $('.game-info').show(); if (window.innerWidth >= 768) {$('#message').hide()}
                         $('#two-field').show();
                         _march(march);
                         my_time_element.text(second_march);
@@ -470,6 +469,7 @@ $(function () {
                                             if (elem.attr('class') === 'corrupted') {
                                                 elem.removeClass().addClass('dead')
                                             } else {
+                                                elem.attr('class', 'past');
                                                 break
                                             }
                                         }
