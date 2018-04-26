@@ -504,7 +504,6 @@ $(function () {
                                         tablo('Ваш корабль убит', 'red')
                                     }
                                     opponent_time_element.text(second_march);
-                                    mark_around(attack.coordinate, 'opponent_field')
                                 } else if (attack.status === 'victory') {
                                     alert('Вы проиграли');
                                     game_socket.close(1000, 'lose');
