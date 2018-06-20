@@ -1,8 +1,10 @@
 import asyncio
+import os
+
 import tornado.web
 from tornado.platform.asyncio import AsyncIOMainLoop
+
 from handlers import MainHandler, WSGameHandler, WSChatHandler, WSOnlineHandler, LogoutHandler, ScoreHandler
-import os
 
 app = tornado.web.Application(
     [
@@ -25,4 +27,4 @@ loop = asyncio.get_event_loop()
 try:
     loop.run_forever()
 except KeyboardInterrupt:
-    print(" server stopped")
+    print("server stopped")

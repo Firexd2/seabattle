@@ -1,11 +1,12 @@
 import asyncio
+
+import tornado.web
 import tornado.web
 import tornado.websocket
-import tornado.web
 from peewee import DoesNotExist
+
 from config import objects
 from models import User, Score
-
 
 letters, digits = 'ABCDEFGHKL', list(range(10))
 default_coordinates = [[str(digit)+letter for letter in letters] for digit in digits]
@@ -44,7 +45,7 @@ class MainHandler(tornado.web.RequestHandler):
                 self.set_cookie('auth', username)
                 self.redirect('/')
             else:
-                self.write('Не верный пароль')
+                self.write('Incorrect password')
         except DoesNotExist:
             score = await objects.create(Score)
             await objects.create(User, username=username, password=password, score=score)
