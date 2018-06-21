@@ -30,6 +30,12 @@ In the project uses PostgreSQL. To configure your database settings, change to `
 psql_db = peewee_async.PostgresqlDatabase('databasename', user='youruser', password='yourpassword', host='localhost')
 ```
 
+For creating tables use:
+
+```bash
+$ python creating_tables.py
+```
+
 #### Run tornado
 
 In the project root folder and with the activated virtual environment:
