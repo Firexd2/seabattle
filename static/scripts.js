@@ -539,8 +539,11 @@ $(function () {
     $('input[name=username]').on('input', function () {
         const $this = $(this);
         const regexp = /^[a-z0-9\s]+$/i;
-        if ($this.val().length > 11 || !regexp.test($this.val())) {
+        if ($this.val().length > 11 || !regexp.test($this.val()) || $this.val().slice(-1) === ' ') {
             $this.val($this.val().slice(0,-1))
         }
+    });
+    $('input[name=username]').on('paste', function (e) {
+        e.preventDefault()
     })
 });
