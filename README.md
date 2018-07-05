@@ -4,7 +4,7 @@ Online game sea battle written with python tornado. The game is being build on t
 
 The game available in my server: http://seabattle.beloglazov.me
 
-![seabattle](https://github.com/Firexd2/test/blob/master/seabattle.gif)
+![seabattle](https://github.com/Firexd2/seabattle/blob/master/seabattle.gif)
 
 ### Install
 
